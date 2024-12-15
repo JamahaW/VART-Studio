@@ -9,7 +9,7 @@ from typing import Final
 from typing import Iterable
 from typing import Optional
 
-from tools.filetool import FileTool
+from bytelang.tools.filetool import FileTool
 
 
 @dataclass(frozen=True, kw_only=True)

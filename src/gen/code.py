@@ -10,7 +10,7 @@ from typing import TextIO
 from bytelang.constants import SOURCE_EXTENSION
 from gen.settings import Settings
 from gen.trajectory import Trajectory
-from tools.filetool import FileTool
+from bytelang.tools.filetool import FileTool
 
 
 class State:

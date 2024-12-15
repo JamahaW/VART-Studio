@@ -11,7 +11,7 @@ from typing import Optional
 from bytelang.content.impl.environments import Environment
 from bytelang.content.impl.environments import EnvironmentInstruction
 from bytelang.content.impl.primitives import PrimitiveType
-from tools.reprtool import ReprTool
+from bytelang.tools import ReprTool
 
 
 class Regex:

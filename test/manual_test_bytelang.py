@@ -1,5 +1,5 @@
 from bytelang.compiler import ByteLangCompiler
-from tools.string import FixedStringIO
+from bytelang.tools import FixedStringIO
 
 bytelang = ByteLangCompiler.simpleSetup(r"A:\Projects\Вертикальный тросовый плоттер\Код\CablePlotterApp\res\bytelang")
 

@@ -18,7 +18,7 @@ from bytelang.core.results.compile.abc import CompileResult
 from bytelang.core.results.compile.impl import CompileResultError
 from bytelang.core.results.compile.impl import CompileResultOK
 from bytelang.utils import LogFlag
-from tools.filetool import AnyPath
+from bytelang.tools.filetool import AnyPath
 
 
 class ByteLangCompiler:

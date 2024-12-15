@@ -9,8 +9,8 @@ from bytelang.bytecode.abc import ProgramData
 from bytelang.bytecode.abc import Statement
 from bytelang.core.results.compile.abc import CompileResult
 from bytelang.utils import LogFlag
-from tools.reprtool import ReprTool
-from tools.string import StringBuilder
+from bytelang.tools import ReprTool
+from bytelang.tools import StringBuilder
 
 
 @dataclass(frozen=True, repr=False)

@@ -14,7 +14,7 @@ from bytelang.content.impl.environments import EnvironmentInstruction
 from bytelang.content.impl.environments import EnvironmentInstructionArgument
 from bytelang.core.parsers.abc import Parser
 from bytelang.content.impl.profiles import Profile
-from tools.reprtool import ReprTool
+from bytelang.tools import ReprTool
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -4,7 +4,7 @@ from abc import ABC
 from abc import abstractmethod
 
 from bytelang.bytecode.abc import Statement
-from tools.reprtool import ReprTool
+from bytelang.tools import ReprTool
 
 
 class BasicErrorHandler(ABC):

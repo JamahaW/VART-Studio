@@ -11,7 +11,7 @@ from bytelang.core.results.compile.abc import CompileResult
 from gen.code import CodeGenerator
 from gen.settings import Settings
 from gen.trajectory import Trajectory
-from tools.string import FixedStringIO
+from bytelang.tools import FixedStringIO
 
 
 class CodeWriter:

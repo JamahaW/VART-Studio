@@ -8,7 +8,7 @@ from bytelang.content.abc import CatalogRegistry
 from bytelang.content.abc import Content
 from bytelang.content.impl.primitives import PrimitiveType
 from bytelang.content.impl.primitives import PrimitivesRegistry
-from tools.filetool import FileTool
+from bytelang.tools.filetool import FileTool
 
 
 @dataclass(frozen=True, kw_only=True)

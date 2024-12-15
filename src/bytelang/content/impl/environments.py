@@ -12,8 +12,8 @@ from bytelang.content.abc import Content
 from bytelang.content.impl.primitives import PrimitiveType
 from bytelang.content.impl.profiles import Profile
 from bytelang.content.impl.profiles import ProfileRegistry
-from tools.filetool import FileTool
-from tools.reprtool import ReprTool
+from bytelang.tools.filetool import FileTool
+from bytelang.tools import ReprTool
 
 
 @dataclass(frozen=True, kw_only=True)
