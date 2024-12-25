@@ -98,7 +98,7 @@ class Application:
                     .add(Button("show_debug", dpg.show_debug))
                 )
 
-            with dpg.tab_bar() as tabs:
+            with dpg.tab_bar():
                 with dpg.tab(label="Canvas View"):
                     self.figure_registry.canvas.place()
 
@@ -117,7 +117,7 @@ class Application:
         self._makeTheme()
 
         with dpg.font_registry():
-            with dpg.font(r"res/fonts/Roboto-Mono/RobotoMono.ttf", 18, default_font=True) as font:
+            with dpg.font(r"res/fonts/Roboto-Mono/RobotoMono.ttf", 16, default_font=True, pixel_snapH=True) as font:
                 dpg.add_font_range_hint(dpg.mvFontRangeHint_Cyrillic)
 
         dpg.bind_font(font)
