@@ -33,7 +33,7 @@ class Application:
 
         self.export_file_dialog = FileDialog(
             "Select Dest Export Bytecode", lambda paths: self._onWriteBytecode(paths[0]),
-            extensions=(("blc", "VART ByteLang ByteCode"),),
+            extensions=(("blc", "VART ByteCode"),),
             default_path=r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res\out"
         )
 
@@ -115,6 +115,12 @@ class Application:
         self.work_area.setSize((1200, 1200))
 
         self._makeTheme()
+
+        with dpg.font_registry():
+            with dpg.font(r"res/fonts/Roboto-Mono/RobotoMono.ttf", 18, default_font=True) as font:
+                dpg.add_font_range_hint(dpg.mvFontRangeHint_Cyrillic)
+
+        dpg.bind_font(font)
 
     @staticmethod
     def _makeTheme():
