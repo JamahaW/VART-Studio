@@ -2,51 +2,16 @@
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
 from dearpygui import dearpygui as dpg
 
+from figure.registry import FigureRegistry
 from ui.dpg.impl import Button
 from ui.dpg.impl import FileDialog
 from ui.dpg.impl import Menu
-from app.figure import Canvas
-from app.figure import TransformableFigure
-from app.figure import WorkAreaFigure
-
-
-class FigureRegistry:
-    """
-    Реестр фигур, расположенных на холсте.
-    Добавить, получить фигуры
-    """
-
-    def __init__(self, canvas: Canvas) -> None:
-        self.__temp_items_count: int = 0
-        self.canvas = canvas
-        self.figures = list[TransformableFigure]()
-
-    def add(self, figure: TransformableFigure) -> None:
-        """
-        Добавить фигуру на холст
-        :param figure:
-        """
-        self.figures.append(figure)
-        self.canvas.attachFigure(figure)
-
-    def demoAdd(self) -> None:
-        """
-        Добавить демо-фигуру
-        """
-        r = range(0, 271, 1)
-        vertices = (
-            [math.cos(math.radians(i)) for i in r],
-            [math.sin(math.radians(i)) for i in r]
-        )
-
-        circle = TransformableFigure(vertices, f"Figure: Test:{self.__temp_items_count}")
-        self.__temp_items_count += 1
-        self.add(circle)
+from figure.abc import Canvas
+from figure.impl.workarea import WorkAreaFigure
 
 
 class App:
@@ -73,9 +38,7 @@ class App:
         print(paths)
 
     def build(self) -> None:
-        """
-        Построить UI приложения
-        """
+        """Построить UI приложения"""
         with dpg.window() as main_window:
             dpg.set_primary_window(main_window, True)
 
@@ -112,6 +75,10 @@ class App:
         self.work_area.setDeadZone(150, 150, 100, 300, -120)
         self.work_area.setSize((1200, 1000))
 
+        self.makeTheme()
+
+    @staticmethod
+    def makeTheme():
         with dpg.theme() as global_theme:
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 6)
@@ -119,5 +86,4 @@ class App:
                 dpg.add_theme_style(dpg.mvStyleVar_GrabRounding, 6)
                 dpg.add_theme_style(dpg.mvStyleVar_ScrollbarRounding, 6)
                 dpg.add_theme_style(dpg.mvStyleVar_PopupRounding, 6)
-
         dpg.bind_theme(global_theme)
