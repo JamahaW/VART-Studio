@@ -31,7 +31,7 @@ class TransformableFigure(Figure):
         self._tool_id: int = 0
         self._movement_speed: int = 0
 
-        self._position_point = DragPoint(self.__onPositionChanged, label="Position")
+        self._position_point = DragPoint(self.__onPositionPointChanged, label="Position")
         self._size_point = DragPoint(self.__onSizeChanged, label="Size", default_value=self.getSize())
         self._set_controls_visible_checkbox = Checkbox(self.__onSetControlsVisibleChanged, label="Controls Visibility", default_value=True)
         self._set_export_checkbox = Checkbox(label="Export", default_value=True)
@@ -55,6 +55,7 @@ class TransformableFigure(Figure):
     def setPosition(self, position: Vec2f) -> None:
         """Получить позицию фигуры"""
         self._position_point.setValue(position)
+        self.__updateSizePoint(*position)
 
     def setSize(self, size: Vec2f) -> None:
         super().setSize(size)
@@ -149,19 +150,22 @@ class TransformableFigure(Figure):
         self.setSize((x, new_scale_y))
         self.update()
 
+    def __onPositionPointChanged(self, new_position: Vec2f) -> None:
+        position_x, position_y = new_position
+        self.__updateSizePoint(position_x, position_y)
+        self._input_position_x.setValue(position_x)
+        self._input_position_y.setValue(position_y)
+        self.update()
+
+    def __updateSizePoint(self, position_x: float, position_y: float) -> None:
+        scale_x, scale_y = self.getSize()
+        self._size_point.setValue(((position_x + scale_x), (position_y + scale_y)))
+
     def __onMovementSpeedChanged(self, new_speed: int) -> None:
         self._movement_speed = new_speed
 
     def __onToolIdChanged(self, new_tool_id: int) -> None:
         self._tool_id = new_tool_id
-
-    def __onPositionChanged(self, new_position: Vec2f) -> None:
-        position_x, position_y = new_position
-        scale_x, scale_y = self.getSize()
-        self._size_point.setValue(((position_x + scale_x), (position_y + scale_y)))
-        self._input_position_x.setValue(position_x)
-        self._input_position_y.setValue(position_y)
-        self.update()
 
     def __onSizeChanged(self, new_scale: Vec2f) -> None:
         scale_x, scale_y = new_scale
