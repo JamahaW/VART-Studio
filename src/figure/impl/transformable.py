@@ -9,6 +9,7 @@ from typing import Sequence
 from figure.abc import Canvas
 from figure.abc import Figure
 from figure.abc import Vec2f
+from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
 from ui.abc import ItemID
 from ui.dpg.impl import Button
@@ -112,8 +113,8 @@ class TransformableFigure(Figure):
 
         self.add(self._set_export_checkbox)
         self.add(self._set_controls_visible_checkbox)
-        self.add(InputInt("Tool-ID", self.__onToolIdChanged, value_range=(0, Trajectory.MAX_TOOL_ID)))
-        self.add(SliderInt("Speed", self.__onMovementSpeedChanged, value_range=(0, Trajectory.MAX_SPEED)))
+        self.add(InputInt("Tool-ID", self.__onToolIdChanged, value_range=GeneratorSettings.getSpeedRange()))
+        self.add(SliderInt("Speed", self.__onMovementSpeedChanged, value_range=GeneratorSettings.getSpeedRange()))
 
         self.add(Separator())
 

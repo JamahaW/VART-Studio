@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 from typing import Iterable
+from typing import Sequence
 
 from dearpygui import dearpygui as dpg
 
@@ -101,7 +102,7 @@ class Button(DPGItem, Placeable):
 
 class FileDialog(DPGItem):
 
-    def __init__(self, label: str, on_select: Callable[[tuple[Path, ...]], None], extensions: Iterable[tuple[str, str]], default_path: str = "") -> None:
+    def __init__(self, label: str, on_select: Callable[[Sequence[Path]], None], extensions: Iterable[tuple[str, str]], default_path: str = "") -> None:
         super().__init__()
 
         def __callback(_, app_data: dict[str, dict]):

@@ -8,13 +8,13 @@ from typing import Optional
 
 from bytelang.content.abc import CatalogRegistry
 from bytelang.content.abc import Content
-from bytelang.content.impl.primitives import PrimitiveType
-from bytelang.content.impl.primitives import PrimitivesRegistry
 from bytelang.content.impl.environments import EnvironmentInstruction
 from bytelang.content.impl.environments import EnvironmentInstructionArgument
-from bytelang.core.parsers.abc import Parser
+from bytelang.content.impl.primitives import PrimitiveType
+from bytelang.content.impl.primitives import PrimitivesRegistry
 from bytelang.content.impl.profiles import Profile
-from bytelang.tools import ReprTool
+from bytelang.core.parsers.abc import Parser
+from bytelang.tools.reprtool import ReprTool
 
 
 @dataclass(frozen=True, kw_only=True)

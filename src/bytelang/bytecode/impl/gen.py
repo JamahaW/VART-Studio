@@ -20,7 +20,7 @@ from bytelang.content.impl.primitives import PrimitiveType
 from bytelang.content.impl.primitives import PrimitiveWriteType
 from bytelang.content.impl.primitives import PrimitivesRegistry
 from bytelang.core.handlers.errors import BasicErrorHandler
-from bytelang.tools import Filter
+from bytelang.tools.filters import Filter
 
 
 class CodeGenerator:

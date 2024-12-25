@@ -4,23 +4,23 @@ import math
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
-from typing import Sequence
+from typing import Iterable
 from typing import TextIO
 
 from bytelang.constants import SOURCE_EXTENSION
-from gen.settings import Settings
-from gen.trajectory import Trajectory
 from bytelang.tools.filetool import FileTool
+from gen.settings import GeneratorSettings
+from gen.trajectory import Trajectory
 
 
 class State:
     """Статус (Состояние) генератора"""
 
     @staticmethod
-    def __calcTotalStepCount(contours: Sequence[Trajectory]) -> int:
+    def __calcTotalStepCount(contours: Iterable[Trajectory]) -> int:
         return sum(map(lambda c: len(c.x_positions), contours))
 
-    def __init__(self, contours: Sequence[Trajectory], config: Settings):
+    def __init__(self, contours: Iterable[Trajectory], config: GeneratorSettings):
         self.global_total_step_count: int = self.__calcTotalStepCount(contours)
         """глобальное суммарное количество перемещений (шаги)"""
         self.last_speed: int = config.speed
@@ -66,7 +66,7 @@ class CodeGenerator:
             for handler_path in Path(codes).glob(f"*.{SOURCE_EXTENSION}")
         })
 
-    def __processTrajectory(self, stream: TextIO, config: Settings, trajectory: Trajectory, state: State) -> None:
+    def __processTrajectory(self, stream: TextIO, config: GeneratorSettings, trajectory: Trajectory, state: State) -> None:
         paint_move_speed = config.speed if trajectory.movement_speed is None else trajectory.movement_speed
 
         stream.write(self.on_contour_begin.format(
@@ -79,7 +79,7 @@ class CodeGenerator:
 
         stream.write(self.on_contour_end)
 
-    def __processStep(self, config: Settings, trajectory: Trajectory, state: State, step_index: int, stream: TextIO, position: tuple[int, int]):
+    def __processStep(self, config: GeneratorSettings, trajectory: Trajectory, state: State, step_index: int, stream: TextIO, position: tuple[int, int]):
         x, y = position
         state.global_current_step_index += 1
 
@@ -106,7 +106,7 @@ class CodeGenerator:
             stream.write(self.on_update_progress.format(progress=current_progress))
             state.global_last_progress = current_progress
 
-    def run(self, stream: TextIO, config: Settings, contours: Sequence[Trajectory]) -> None:
+    def run(self, stream: TextIO, config: GeneratorSettings, contours: Iterable[Trajectory]) -> None:
         status = State(contours, config)
 
         stream.write(self.setup)

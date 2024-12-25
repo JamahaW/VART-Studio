@@ -3,18 +3,19 @@ from __future__ import annotations
 from os import PathLike
 from pathlib import Path
 from typing import BinaryIO
-from typing import Sequence
+from typing import Iterable
 
 from bytelang.compiler import ByteLangCompiler
-from bytelang.utils import LogFlag
 from bytelang.core.results.compile.abc import CompileResult
+from bytelang.tools.string import FixedStringIO
+from bytelang.utils import LogFlag
 from gen.code import CodeGenerator
-from gen.settings import Settings
+from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
-from bytelang.tools import FixedStringIO
 
 
 class CodeWriter:
+    """"""
 
     @staticmethod
     def simpleSetup(setup_folder: PathLike | str) -> CodeWriter:
@@ -28,7 +29,7 @@ class CodeWriter:
         self.__code_generator = code_generator
         self.__bytelang = bytelang
 
-    def run(self, config: Settings, contours: Sequence[Trajectory], bytecode_stream: BinaryIO, log_flag: LogFlag = LogFlag.ALL) -> CompileResult:
+    def run(self, config: GeneratorSettings, contours: Iterable[Trajectory], bytecode_stream: BinaryIO, log_flag: LogFlag = LogFlag.ALL) -> CompileResult:
         stream = FixedStringIO()
         self.__code_generator.run(stream, config, contours)
 
@@ -37,10 +38,10 @@ class CodeWriter:
         return self.__bytelang.compile(stream, bytecode_stream, log_flag)
 
 
-def test(output_path=r"C:\Users\User\Desktop\Вертикальный тросовый плоттер\Код\CablePlotterApp\res\out\test.blc"):
-    writer = CodeWriter.simpleSetup(r"C:\Users\User\Desktop\Вертикальный тросовый плоттер\Код\CablePlotterApp\res")
+def test(output_path: str):
+    writer = CodeWriter.simpleSetup(r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res")
 
-    config = Settings(
+    config = GeneratorSettings(
         speed=5,
         end_speed=10,
         tool_none=0,
@@ -49,7 +50,7 @@ def test(output_path=r"C:\Users\User\Desktop\Вертикальный тросо
     )
 
     trajectories = (
-        Trajectory(x_positions=range(5), y_positions=range(5), tool_id=1),
+        Trajectory(x_positions=range(5), y_positions=range(5), tool_id=1, movement_speed=5),
     )
 
     with open(output_path, "wb") as bytecode_stream:
@@ -58,4 +59,4 @@ def test(output_path=r"C:\Users\User\Desktop\Вертикальный тросо
 
 
 if __name__ == "__main__":
-    test()
+    test(r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res\out\test.blc")

@@ -13,7 +13,7 @@ from bytelang.content.impl.primitives import PrimitiveType
 from bytelang.content.impl.profiles import Profile
 from bytelang.content.impl.profiles import ProfileRegistry
 from bytelang.tools.filetool import FileTool
-from bytelang.tools import ReprTool
+from bytelang.tools.reprtool import ReprTool
 
 
 @dataclass(frozen=True, kw_only=True)

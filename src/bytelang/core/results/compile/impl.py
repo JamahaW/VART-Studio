@@ -3,14 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from bytelang.bytecode.abc import CodeInstruction
-from bytelang.core.handlers.errors import ErrorHandler
-from bytelang.core.parsers.abc import Parser
 from bytelang.bytecode.abc import ProgramData
 from bytelang.bytecode.abc import Statement
+from bytelang.core.handlers.errors import ErrorHandler
+from bytelang.core.parsers.abc import Parser
 from bytelang.core.results.compile.abc import CompileResult
+from bytelang.tools.reprtool import ReprTool
+from bytelang.tools.string import StringBuilder
 from bytelang.utils import LogFlag
-from bytelang.tools import ReprTool
-from bytelang.tools import StringBuilder
 
 
 @dataclass(frozen=True, repr=False)
