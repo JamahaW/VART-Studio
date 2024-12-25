@@ -47,8 +47,8 @@ class FigureRegistry:
 
     def addDemoRect(self) -> None:
         rect = TransformableFigure((
-            (0, 0, 1, 1, 0),
-            (0, 1, 1, 0, 0)
+            (-1, -1, 1, 1, -1),
+            (-1, 1, 1, -1, -1)
         ), "rect")
         self.add(rect)
 

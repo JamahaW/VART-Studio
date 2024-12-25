@@ -75,6 +75,7 @@ class Application:
                     Button("bar", lambda: print(dpg.get_value(tabs))).place()
 
         self.figure_registry.canvas.attachFigure(self.work_area)
+        self.figure_registry.addDemoRect()
 
         self.work_area.setDeadZone(150, 150, 100, 300, -120)
         self.work_area.setSize((1200, 1000))

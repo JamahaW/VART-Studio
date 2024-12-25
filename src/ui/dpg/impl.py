@@ -201,6 +201,15 @@ class Checkbox(VariableDPGItem[bool], Placeable):
         del self.__default_value
 
 
+class Separator(DPGItem, Placeable):
+
+    def placeRaw(self, parent_id: ItemID) -> None:
+        self.setItemID(dpg.add_separator(parent=parent_id))
+
+    def __init__(self) -> None:
+        super().__init__()
+
+
 class InputInt(RangedDPGItem[int], Placeable):
 
     def __init__(
