@@ -10,9 +10,9 @@ from dearpygui import dearpygui as dpg
 from ui.dpg.impl import Button
 from ui.dpg.impl import FileDialog
 from ui.dpg.impl import Menu
-from ui.figure.canvas import Canvas
-from ui.figure.impl.transformable import TransformableFigure
-from ui.figure.impl.workarea import WorkAreaFigure
+from app.figure import Canvas
+from app.figure import TransformableFigure
+from app.figure import WorkAreaFigure
 
 
 class FigureRegistry:
