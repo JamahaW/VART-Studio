@@ -23,12 +23,12 @@ class Figure(LineSeries, ABC):
         self.__size = size
 
     @abstractmethod
-    def getTransformedVertices(self) -> tuple[list[float], list[float]]:
-        pass
+    def getTransformedVertices(self) -> tuple[Sequence[float], Sequence[float]]:
+        """Получить трансформированные вершины"""
 
     @abstractmethod
     def attachIntoCanvas(self, canvas: Canvas) -> None:
-        pass
+        """Добавить на холст эту фигуру"""
 
     def getSize(self) -> tuple[float, float]:
         return self.__size

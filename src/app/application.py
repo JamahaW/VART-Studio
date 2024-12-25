@@ -14,10 +14,8 @@ from figure.abc import Canvas
 from figure.impl.workarea import WorkAreaFigure
 
 
-class App:
-    """
-    Приложение
-    """
+class Application:
+    """Приложение"""
 
     def __init__(self) -> None:
         self.file_dialog = FileDialog(
@@ -37,6 +35,9 @@ class App:
         """
         print(paths)
 
+    def _testShowFigures(self) -> None:
+        print("\n".join(map(str, self.figure_registry.getTrajectories())))
+
     def build(self) -> None:
         """Построить UI приложения"""
         with dpg.window() as main_window:
@@ -47,7 +48,10 @@ class App:
 
                 (
                     Menu("dev").place()
-                    .add(Button("app demo figure", self.figure_registry.demoAdd))
+                    .add(Button("app circle", self.figure_registry.addDemoCircle))
+                    .add(Button("app triangle", self.figure_registry.addDemoTriangle))
+                    .add(Button("app rect", self.figure_registry.addDemoRect))
+                    .add(Button("show figures", self._testShowFigures))
                 )
 
                 dpg.add_separator()
