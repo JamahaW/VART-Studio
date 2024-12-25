@@ -24,7 +24,7 @@ class FigureRegistry:
     def add(self, figure: TransformableFigure) -> None:
         """Добавить фигуру на холст"""
         self._figures.append(figure)
-        self.canvas.attachFigure(figure)
+        self.canvas.addFigure(figure)
 
     def addDemoCircle(self) -> None:
         """Добавить демо-фигуру"""

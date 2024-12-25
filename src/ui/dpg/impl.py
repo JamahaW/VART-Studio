@@ -16,6 +16,7 @@ from ui.dpg.abc import VariableDPGItem
 
 
 class Group(DPGItem, Container, Placeable):
+    """Группа элементов"""
 
     def __init__(self, **kwargs) -> None:
         super().__init__()
@@ -69,7 +70,7 @@ class Text(VariableDPGItem[str], Placeable):
 
 class SliderInt[T: (float, int)](Placeable, RangedDPGItem[T]):
 
-    def __init__(self, value_range: tuple[T, T], label: str = None, on_change: Callable[[T], None] = None, *, default_value: T = 0):
+    def __init__(self, label: str, on_change: Callable[[T], None] = None, *, value_range: tuple[T, T] = (0, 10), default_value: T = 0):
         super().__init__()
         self.__callback = None if on_change is None else lambda: on_change(self.getValue())
         self.__label = label
@@ -89,7 +90,7 @@ class Button(DPGItem, Placeable):
 
     def __init__(self, label: str, on_click: Callable[[], None]) -> None:
         super().__init__()
-        self.__label = f"[{label}]"
+        self.__label = label
         self.__callback = lambda: on_click()
 
     def placeRaw(self, parent_id: ItemID) -> None:
@@ -103,7 +104,7 @@ class FileDialog(DPGItem):
     def __init__(self, label: str, on_select: Callable[[tuple[Path, ...]], None], extensions: Iterable[tuple[str, str]], default_path: str = "") -> None:
         super().__init__()
 
-        def callback(_, app_data: dict[str, dict]):
+        def __callback(_, app_data: dict[str, dict]):
             paths = app_data.get("selections").values()
 
             if len(paths) == 0:
@@ -111,7 +112,7 @@ class FileDialog(DPGItem):
 
             on_select(tuple(Path(p) for p in paths))
 
-        with dpg.file_dialog(label=label, callback=callback, directory_selector=False, show=False, width=1200, height=800, default_path=default_path, modal=True) as f:
+        with dpg.file_dialog(label=label, callback=__callback, directory_selector=False, show=False, width=1200, height=800, default_path=default_path, modal=True) as f:
             self.setItemID(f)
 
             for extension, text in extensions:

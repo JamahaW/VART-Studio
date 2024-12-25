@@ -11,15 +11,18 @@ from ui.abc import VariableItem
 
 
 class DPGItem(Item):
+    """Элемент интерфейса DearPyGui"""
     __dpg_item_id: Optional[ItemID]
 
     def __init__(self) -> None:
         self.__dpg_item_id = None
 
     def getItemID(self) -> ItemID:
+        """Получить ID элемента"""
         return self.__dpg_item_id
 
     def setItemID(self, item_id: ItemID) -> None:
+        """Закрепить элемент за объектом"""
         if self.__dpg_item_id is not None:
             raise ValueError("setItemID must called once")
 
@@ -41,9 +44,11 @@ class DPGItem(Item):
         dpg.delete_item(self.__dpg_item_id)
 
     def setConfiguration(self, **kwargs) -> None:
+        """Установить конфигурацию элемента"""
         dpg.configure_item(self.__dpg_item_id, **kwargs)
 
     def getConfiguration(self) -> dict[str, float | int | bool | str]:
+        """Получить конфигурацию объекта"""
         return dpg.get_item_configuration(self.__dpg_item_id)
 
 

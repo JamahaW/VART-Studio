@@ -72,8 +72,8 @@ class WorkAreaFigure(Figure):
         offset_y = (bottom_dead_zone - top_dead_zone) / 2 + self.getVerticalOffset()
 
         return (
-            [x * area_width + offset_x for x in self.source_vertices_x],
-            [y * area_height + offset_y for y in self.source_vertices_y],
+            [x * area_width + offset_x for x in self._source_vertices_x],
+            [y * area_height + offset_y for y in self._source_vertices_y],
         )
 
     def placeRaw(self, parent_id: ItemID) -> None:

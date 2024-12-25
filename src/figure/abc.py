@@ -12,14 +12,19 @@ from ui.dpg.impl import Axis
 from ui.dpg.impl import LineSeries
 from ui.dpg.impl import Plot
 
+type Vec2[T] = tuple[T, T]
+Vec2f = Vec2[float]
+Vec2i = Vec2[int]
+
 
 class Figure(LineSeries, ABC):
+    """Фигура, изображенная на холсте"""
 
-    def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str, size: tuple[int, int] = (0, 0)) -> None:
+    def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str, size: Vec2i = (0, 0)) -> None:
         super().__init__(label)
         source_x, source_y = vertices
-        self.source_vertices_x: Final[Sequence[float]] = source_x
-        self.source_vertices_y: Final[Sequence[float]] = source_y
+        self._source_vertices_x: Final[Sequence[float]] = source_x
+        self._source_vertices_y: Final[Sequence[float]] = source_y
         self.__size = size
 
     @abstractmethod
@@ -30,13 +35,16 @@ class Figure(LineSeries, ABC):
     def attachIntoCanvas(self, canvas: Canvas) -> None:
         """Добавить на холст эту фигуру"""
 
-    def getSize(self) -> tuple[float, float]:
+    def getSize(self) -> Vec2f:
+        """Получить масштаб фигуры"""
         return self.__size
 
-    def setSize(self, size: tuple[float, float]) -> None:
+    def setSize(self, size: Vec2f) -> None:
+        """Установить масштаб фигуры"""
         self.__size = size
 
     def update(self) -> None:
+        """Обновить показания на холста"""
         self.setValue(self.getTransformedVertices())
 
 
@@ -50,5 +58,6 @@ class Canvas(Plot):
         super().placeRaw(parent_id)
         self.add(self.axis)
 
-    def attachFigure(self, figure: Figure) -> None:
+    def addFigure(self, figure: Figure) -> None:
+        """Добавить фигуру"""
         figure.attachIntoCanvas(self)
