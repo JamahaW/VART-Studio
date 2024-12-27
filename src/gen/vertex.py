@@ -1,148 +1,77 @@
+from itertools import chain
 from math import cos
 from math import pi
 from math import sin
+from pathlib import Path
+from typing import Iterable
+
+type Number = int | float
+
+type Vertices[T] = tuple[Iterable[T], Iterable[T]]
+type Vec2D[T] = tuple[T, T]
 
 
-def mix(a: float, b: float, t: float) -> float:
-    return a * t + (1.0 - t) * b
-
-
-def vecMix(pos: Vector2, old: Vector2, t: float) -> Vector2:
-    return Vector2(
-        mix(pos.x, old.x, t),
-        mix(pos.y, old.y, t)
-    )
+def mix[T: Number](__from: T, __end: T, t: float) -> T:
+    return __end * t + (1.0 - t) * __from
 
 
 class VertexGenerator:
 
-    # @staticmethod
-    # def scale(source: list[Vector2], scale: Vector2):
-    #     return [
-    #         Vector2(v.x * scale.x, v.y * scale.y)
-    #         for v in source
-    #     ]
-    #
-    # @staticmethod
-    # def move(source: list[Vector2], offset: Vector2):
-    #     return [
-    #         Vector2(v.x + offset.x, v.y + offset.y)
-    #         for v in source
-    #     ]
-    #
-    # @staticmethod
-    # def rotate(source: list[Vector2], angle: float):
-    #     r = radians(angle)
-    #     cos_a = cos(r)
-    #     sin_a = sin(r)
-    #
-    #     return [
-    #         Vector2(cos_a * v.x - sin_a * v.y, sin_a * v.x + cos_a * v.y)
-    #         for v in source
-    #     ]
-
-    # @staticmethod
-    # def removeNear(vex: list[Vector2], delta: float = 1) -> list[Vector2]:
-    #     if len(vex) == 0:
-    #         return vex
-    #
-    #     ret = [vex[0]]
-    #
-    #     for cur in vex[1:]:
-    #         last = ret[-1]
-    #
-    #         if hypot(cur.x - last.x, cur.y - last.y) > delta:
-    #             ret.append(Vector2(cur.x, cur.y))
-    #
-    #     return ret
-    #
-    # @staticmethod
-    # def findFarIndices(vex: list[Vector2], far=20):
-    #     return {
-    #         i
-    #         for i in range(len(vex) - 1)
-    #         if hypot(vex[i].x - vex[i + 1].x, vex[i].y - vex[i + 1].y) > far
-    #     }
-    #
-    # @staticmethod
-    # def nearDistSort(vertices: list[Vector2]) -> list:
-    #
-    #     vex = [
-    #         v.toTuple()
-    #         for v in vertices
-    #     ]
-    #
-    #     path = [vex[0]]
-    #
-    #     unvisited_vertices = np.array(vex[1:])
-    #
-    #     while unvisited_vertices.shape[0] > 0:
-    #         current_vertex = path[-1][::-1]
-    #         distances = np.linalg.norm(unvisited_vertices - current_vertex, axis=1)
-    #         nearest_index = np.argmin(distances)
-    #         nearest = unvisited_vertices[nearest_index]
-    #         path.append(tuple(nearest[::-1]))
-    #         unvisited_vertices = np.delete(unvisited_vertices, nearest_index, axis=0)
-    #
-    #     return [
-    #         Vector2(p[0], p[1])
-    #         for p in path
-    #     ]
-    #
-    # #
-
-    @staticmethod
-    def spiral(radius: int, steps: int, k=1.0) -> list:
-        k2_pi_p = 2 * k * pi / steps
-        r_p = radius / steps
-
-        return [
-            (int(sin(a * k2_pi_p) * a * r_p), int(cos(a * k2_pi_p) * a * r_p))
-            for a in range(steps + 1)
-        ]
-
-    @staticmethod
-    def circle(radius: int, steps: int) -> list[Vector2]:
-        k2_pi_p = 2 * pi / steps
-
-        return [
-            Vector2(sin(a * k2_pi_p) * radius, cos(a * k2_pi_p) * radius)
-            for a in range(steps)
-        ]
-
     @classmethod
-    def rect(cls, width: int, height: int, steps: int) -> list[Vector2]:
-        w = width / 2
-        h = height / 2
+    def spiral(cls, radius: int, vertex_count: int, k: float = 1.0) -> Vertices[int]:
+        k2_pi_p = 2 * k * pi / vertex_count
+        r_p = radius / vertex_count
 
-        steps_h = int(height * steps / width)
-
-        p1 = w, h
-        p2 = w, -h
-        p3 = -w, -h
-        p4 = -w, h
-
-        draw_data = (
-            (p1, p2, steps_h),
-            (p2, p3, steps),
-            (p3, p4, steps_h),
-            (p4, p1, steps)
+        return (
+            map(lambda a: int(sin(a * k2_pi_p) * a * r_p), cls.range(vertex_count)),
+            map(lambda a: int(cos(a * k2_pi_p) * a * r_p), cls.range(vertex_count))
         )
 
-        ret = list()
+    @classmethod
+    def circle(cls, radius: int, vertex_count: int) -> Vertices[int]:
+        k2_pi_p = 2 * pi / vertex_count
 
-        for (xa, ya), (xb, yb), st in draw_data:
-            ret.extend(cls.line(Vector2(xa, ya), Vector2(xb, yb), st))
-
-        return ret
-
-    @staticmethod
-    def line(pos1: Vector2, pos2: Vector2, steps: int) -> list[Vector2]:
-        return [
-            vecMix(pos1, pos2, t / steps)
-            for t in range(steps + 1)
-        ]
+        return (
+            map(lambda a: int(sin(a * k2_pi_p) * radius), cls.range(vertex_count)),
+            map(lambda a: int(cos(a * k2_pi_p) * radius), cls.range(vertex_count))
+        )
 
     @classmethod
-    def image(cls, path: str) -> list[Vector2]:
+    def rect(cls, width: int, height: int, width_vertex_count: int) -> Vertices[int]:
+        half_width = width // 2
+        half_height = height // 2
+
+        vertices_on_height = height * width_vertex_count // width
+
+        a = half_width, half_height
+        b = -half_width, half_height
+        c = -half_width, -half_height
+        d = half_width, -half_height
+
+        line_params = (
+            (a, b, vertices_on_height),
+            (b, c, width_vertex_count),
+            (c, d, vertices_on_height),
+            (d, a, width_vertex_count)
+        )
+
+        x, y = tuple(zip(*(map(lambda _: cls.line(*_), line_params))))
+        return chain(*x), chain(*y)
+
+    @classmethod
+    def line[T: Number](cls, begin: Vec2D[T], end: Vec2D[T], vertex_count: int) -> Vertices[T]:
+        x0, y0 = begin
+        x1, y1 = end
+        return map(lambda t: mix(x0, x1, t), cls.rangeNorm(vertex_count)), map(lambda t: mix(y0, y1, t), cls.rangeNorm(vertex_count))
+
+    @classmethod
+    def rangeNorm(cls, vertex_count: int) -> Iterable[float]:
+        return map(lambda n: n / vertex_count, cls.range(vertex_count))
+
+    @staticmethod
+    def range(vertex_count: int) -> Iterable[int]:
+        return range(vertex_count + 1)
+
+    @classmethod
+    def fromImage(cls, path: Path) -> Vertices[int]:
         pass
