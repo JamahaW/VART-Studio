@@ -20,9 +20,16 @@ class VertexGenerator:
     MIN_RESOLUTION: Final[int] = 10
     MAX_RESOLUTION: Final[int] = 1000
 
+    MIN_POLYGON_VERTEX_COUNT: Final[int] = 3
+    MAX_POLYGON_VERTEX_COUNT: Final[int] = 100
+
     @classmethod
     def getResolutionRange(cls) -> tuple[int, int]:
-        return cls.MAX_RESOLUTION, cls.MAX_RESOLUTION
+        return cls.MIN_RESOLUTION, cls.MAX_RESOLUTION
+
+    @classmethod
+    def getPolygonRange(cls) -> tuple[int, int]:
+        return cls.MIN_POLYGON_VERTEX_COUNT, cls.MAX_POLYGON_VERTEX_COUNT
 
     @classmethod
     def spiral(cls, resolution: int, k: float = 1.0) -> Vertices:
@@ -42,23 +49,13 @@ class VertexGenerator:
 
     @classmethod
     def nGon(cls, vertex_count: int, resolution: int) -> Vertices:
-        angles = tuple(map(radians, range(0, 360, cls.calcNGonAngle(vertex_count))))
+        angle = 360 // vertex_count
+        angles = tuple(map(radians, range(0, 360, angle)))
         return cls.polygon((map(sin, angles), map(cos, angles)), resolution)
 
     @classmethod
     def rect(cls, resolution: int) -> Vertices:
         return cls.polygon(((1, -1, -1, 1), (1, 1, -1, -1)), resolution)
-
-    @classmethod
-    def calcNGonAngle(cls, vertex_count: int) -> int:
-        return cls.calcNGonSumAngle(vertex_count) // vertex_count
-
-    @classmethod
-    def calcNGonSumAngle(cls, vertex_count: int) -> int:
-        if vertex_count > 2:
-            return (vertex_count - 2) * 180
-
-        raise ValueError(f"Invalid vertex_count: {vertex_count}")
 
     @classmethod
     def polygon(cls, vertices: Vertices, resolution: int) -> Vertices:

@@ -5,6 +5,8 @@ from typing import Iterable
 from typing import Sequence
 
 from figure.abc import Canvas
+from figure.impl.generative import PerfectPolygon
+from figure.impl.generative import RectFigure
 from figure.impl.transformable import TransformableFigure
 from gen.trajectory import Trajectory
 
@@ -40,11 +42,7 @@ class FigureRegistry:
 
     def addDemoCircle(self) -> None:
         """Добавить демо-фигуру"""
-        r = range(0, 271, 1)
-        self.add(self.newFigure(self._makeName("test"), (
-            [math.cos(math.radians(i)) for i in r],
-            [math.sin(math.radians(i)) for i in r]
-        )))
+        self.add(PerfectPolygon(self._makeName("Polygon"), self.__onFigureDelete))
 
     def addDemoTriangle(self) -> None:
         self.add(self.newFigure(self._makeName("triangle"), (
@@ -53,10 +51,7 @@ class FigureRegistry:
         )))
 
     def addDemoRect(self) -> None:
-        self.add(self.newFigure(self._makeName("rect"), (
-            (-1, -1, 1, 1, -1),
-            (-1, 1, 1, -1, -1)
-        )))
+        self.add(RectFigure(self._makeName("Rect"), self.__onFigureDelete))
 
     def clear(self) -> None:
         for figure in self.getFigures():
