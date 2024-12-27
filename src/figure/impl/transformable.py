@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import math
 from typing import Callable
+from typing import ClassVar
 from typing import Optional
 from typing import Sequence
 
 from figure.abc import Canvas
 from figure.abc import Figure
 from figure.abc import Vec2f
+from figure.abc import Vec2i
 from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
 from ui.abc import ItemID
+from ui.custom.input2d import InputInt2D
 from ui.dpg.impl import Button
 from ui.dpg.impl import Checkbox
 from ui.dpg.impl import CollapsingHeader
@@ -20,39 +23,57 @@ from ui.dpg.impl import DragPoint
 from ui.dpg.impl import InputInt
 from ui.dpg.impl import Separator
 from ui.dpg.impl import SliderInt
-from ui.dpg.impl import Text
 
 
 class TransformableFigure(Figure):
+    INPUT_WIDTH: ClassVar[int] = 200
+    DEFAULT_SIZE: ClassVar[Vec2i] = (100, 100)
 
     def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
-        super().__init__(vertices, label, (100, 100))
+        super().__init__(vertices, label, self.DEFAULT_SIZE)
 
         self._on_delete = on_delete
 
-        self.__sin_angle: float = 0
-        self.__cos_angle: float = 0
-        self.setRotation(0)
-
         self._speed_input = SliderInt("Скорость", value_range=GeneratorSettings.getSpeedRange())
-        self._tool_id_input = InputInt("Tool-ID", value_range=(1, Trajectory.MAX_TOOL_ID))
+        self._tool_id_input = InputInt("Инструмент", value_range=(1, Trajectory.MAX_TOOL_ID), default_value=1, width=self.INPUT_WIDTH)
+
+        self._rotation_input = InputInt("Поворот", self.__onRotationInputChanged, value_range=(-360, 360), default_value=0, step=2, step_fast=5, width=self.INPUT_WIDTH)
 
         self._position_point = DragPoint(self.__onPositionPointChanged, label="Position")
         self._size_point = DragPoint(self.__onSizeChanged, label="Размер", default_value=self.getSize())
         self._set_controls_visible_checkbox = Checkbox(self.__onSetControlsVisibleChanged, label="Видимость элементов управления", default_value=True)
         self._set_export_checkbox = Checkbox(label="Для печати", default_value=True)
 
-        x, y = self.getSize()
-        self._input_scale_x = InputInt("X", self.__updateScaleX, value_range=(0, 10000), default_value=int(x))
-        self._input_scale_y = InputInt("Y", self.__updateScaleY, value_range=(0, 10000), default_value=int(y))
-        self._input_position_x = InputInt("X", self.__updatePositionX, value_range=(-10000, 10000))
-        self._input_position_y = InputInt("Y", self.__updatePositionY, value_range=(-10000, 10000))
+        self._input_scale = InputInt2D(
+            "Масштаб",
+            self.__onUpdateScaleInput,
+            default_value=self.getSize(),
+            value_range=(1, 10000),
+            x_label="Ширина",
+            y_label="Высота",
+            input_width=self.INPUT_WIDTH,
+            step=5,
+            step_fast=20,
+            reset_button=True
+        )
 
-    def setRotation(self, angle: int) -> None:
-        """Установить поворот"""
-        angle = math.radians(angle)
-        self.__sin_angle = math.sin(angle)
-        self.__cos_angle = math.cos(angle)
+        self._input_position = InputInt2D(
+            "Позиция",
+            self.__onPositionInputChange,
+            input_width=self.INPUT_WIDTH,
+            step=10,
+            step_fast=50,
+            value_range=(-10000, 10000)
+        )
+
+        self.__sin_angle: float = 0
+        self.__cos_angle: float = 0
+        self.__calcRotation(0)
+
+    def __calcRotation(self, angle_degrees: float) -> None:
+        angle_radians = math.radians(angle_degrees)
+        self.__sin_angle = math.sin(angle_radians)
+        self.__cos_angle = math.cos(angle_radians)
 
     def getPosition(self) -> Vec2f:
         """Получить текущую позицию"""
@@ -63,7 +84,7 @@ class TransformableFigure(Figure):
         self._position_point.setValue(position)
         self.__updateSizePoint(*position)
 
-    def setSize(self, size: Vec2f) -> None:
+    def setSize(self, size: Vec2i) -> None:
         super().setSize(size)
         size_x, size_y = size
         position_x, position_y = self.getPosition()
@@ -127,46 +148,28 @@ class TransformableFigure(Figure):
 
         (
             CollapsingHeader("Трансформация", default_open=True).place(self)
-            .add(Text("Масштаб"))
-            .add(self._input_scale_x)
-            .add(self._input_scale_y)
+            .add(self._input_scale)
+            .add(self._rotation_input)
+            .add(Button("Сбросить", lambda: self.setRotation(0)))
             .add(Separator())
-            .add(InputInt("Поворот", self.__onRotationChanged, value_range=(-360, 360), default_value=0, step_fast=15))
-            .add(Separator())
-            .add(Text("Позиция"))
-            .add(self._input_position_x)
-            .add(self._input_position_y)
-            .add(Separator())
+            .add(self._input_position)
         )
 
         self.add(self._set_controls_visible_checkbox)
         self.add(Button("Удалить фигуру", self.delete))
 
-    def __updatePositionX(self, new_x: float) -> None:
-        _, y = self.getPosition()
-        self.setPosition((new_x, y))
+    def __onPositionInputChange(self, new_position: Vec2i) -> None:
+        self.setPosition(new_position)
         self.update()
 
-    def __updatePositionY(self, new_y: float) -> None:
-        x, _ = self.getPosition()
-        self.setPosition((x, new_y))
-        self.update()
-
-    def __updateScaleX(self, new_scale_x: float) -> None:
-        _, y = self.getSize()
-        self.setSize((new_scale_x, y))
-        self.update()
-
-    def __updateScaleY(self, new_scale_y: float) -> None:
-        x, _ = self.getSize()
-        self.setSize((x, new_scale_y))
+    def __onUpdateScaleInput(self, new_scale: Vec2i) -> None:
+        self.setSize(new_scale)
         self.update()
 
     def __onPositionPointChanged(self, new_position: Vec2f) -> None:
-        position_x, position_y = new_position
-        self.__updateSizePoint(position_x, position_y)
-        self._input_position_x.setValue(position_x)
-        self._input_position_y.setValue(position_y)
+        self.__updateSizePoint(*new_position)
+        # noinspection PyTypeChecker
+        self._input_position.setValue(new_position)
         self.update()
 
     def __updateSizePoint(self, position_x: float, position_y: float) -> None:
@@ -176,16 +179,20 @@ class TransformableFigure(Figure):
     def __onSizeChanged(self, new_scale: Vec2f) -> None:
         scale_x, scale_y = new_scale
         position_x, position_y = self.getPosition()
-        x = scale_x - position_x
-        y = scale_y - position_y
+        size = int(scale_x - position_x), int(scale_y - position_y)
 
-        self.setSize((x, y))
-        self._input_scale_x.setValue(x)
-        self._input_scale_y.setValue(y)
+        self.setSize(size)
+        self._input_scale.setValue(size)
         self.update()
 
-    def __onRotationChanged(self, new_angle: int) -> None:
-        self.setRotation(new_angle)
+    def __onRotationInputChanged(self, new_angle: int) -> None:
+        self.__calcRotation(new_angle)
+        self.update()
+
+    def setRotation(self, angle_degrees: int) -> None:
+        """Установить поворот"""
+        self._rotation_input.setValue(angle_degrees)
+        self.__calcRotation(angle_degrees)
         self.update()
 
     def __onSetControlsVisibleChanged(self, is_visible: bool) -> None:

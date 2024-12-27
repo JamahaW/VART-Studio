@@ -14,9 +14,9 @@ from figure.impl.workarea import WorkAreaFigure
 from figure.registry import FigureRegistry
 from gen.settings import GeneratorSettings
 from gen.writer import CodeWriter
+from ui.custom.input2d import InputInt2D
 from ui.custom.logger import LoggerWidget
 from ui.dpg.impl import Button
-from ui.dpg.impl import ChildWindow
 from ui.dpg.impl import FileDialog
 from ui.dpg.impl import Menu
 
@@ -29,18 +29,18 @@ class Application:
         self.log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME | LogFlag.BYTECODE
 
         self.image_file_dialog = FileDialog(
-            "Select Image file", self.onImageFileSelected,
+            "Укажите файл изображения для вставки", self.onImageFileSelected,
             (("png", "Image"),),
             resources_path / "res/images"
         )
 
         self.export_file_dialog = FileDialog(
-            "Select Dest Export Bytecode", lambda paths: self._onWriteBytecode(paths[0]),
+            "Укажите файл для экспорта", lambda paths: self._onWriteBytecode(paths[0]),
             extensions=(("blc", "VART ByteCode"),),
             default_path=(resources_path / "res/out")
         )
 
-        self.work_area = WorkAreaFigure("Work Area")
+        self.work_area = WorkAreaFigure("Рабочая область")
         self.figure_registry = FigureRegistry(Canvas())
 
         self.generator_settings = GeneratorSettings(
@@ -83,27 +83,27 @@ class Application:
 
             with dpg.menu_bar():
                 (
-                    Menu("File").place()
-                    .add(Button("Open", self.image_file_dialog.show))
-                    .add(Button("Export", self.export_file_dialog.show))
+                    Menu("Файл").place()
+                    .add(Button("Открыть", self.image_file_dialog.show))
+                    .add(Button("Экспорт", self.export_file_dialog.show))
                 )
 
                 dpg.add_separator()
 
-                Button("Clear", self.figure_registry.clear).place()
+                Button("Очистить", self.figure_registry.clear).place()
 
                 (
-                    Menu("Add").place()
-                    .add(Button("Circle", self.figure_registry.addDemoCircle))
-                    .add(Button("Triangle", self.figure_registry.addDemoTriangle))
-                    .add(Button("Rect", self.figure_registry.addDemoRect))
+                    Menu("Вставка").place()
+                    .add(Button("Круг", self.figure_registry.addDemoCircle))
+                    .add(Button("Треугольник", self.figure_registry.addDemoTriangle))
+                    .add(Button("Прямоугольник", self.figure_registry.addDemoRect))
                 )
 
                 dpg.add_separator()
 
                 (
                     Menu("Dev").place()
-                    .add(Button("print trajectories", self._printTrajectories))
+                    .add(Button("Вывод траекторий", self._printTrajectories))
                     .add(Button("show_implot_demo", dpg.show_implot_demo))
                     .add(Button("show_font_manager", dpg.show_font_manager))
                     .add(Button("show_style_editor", dpg.show_style_editor))
@@ -114,14 +114,28 @@ class Application:
                 )
 
             with dpg.tab_bar():
-                with dpg.tab(label="Canvas View"):
+                with dpg.tab(label="Область печати"):
                     self.figure_registry.canvas.place()
 
-                with dpg.tab(label="Setting"):
+                with dpg.tab(label="Параметры"):
                     CodeGeneratorSettngsWidget(self.generator_settings).place()
 
                 with dpg.tab(label="Logs"):
                     self.logger.place()
+
+                with dpg.tab(label="Test"):
+                    InputInt2D(
+                        "Input 2D",
+                        (lambda v: print(v)),
+                        default_value=(123, 456),
+                        value_range=(-1234, 1234),
+                        x_label="Иксы",
+                        y_label="Игреки",
+                        step=1,
+                        step_fast=100,
+                        reset_button=True,
+                        is_horizontal=True
+                    ).place()
 
         self.figure_registry.canvas.addFigure(self.work_area)
         self.figure_registry.addDemoRect()

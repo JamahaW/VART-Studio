@@ -35,11 +35,11 @@ class Figure(LineSeries, ABC):
     def attachIntoCanvas(self, canvas: Canvas) -> None:
         """Добавить на холст эту фигуру"""
 
-    def getSize(self) -> Vec2f:
+    def getSize(self) -> Vec2i:
         """Получить масштаб фигуры"""
         return self.__size
 
-    def setSize(self, size: Vec2f) -> None:
+    def setSize(self, size: Vec2i) -> None:
         """Установить масштаб фигуры"""
         self.__size = size
 
