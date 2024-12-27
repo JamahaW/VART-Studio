@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import ClassVar
-from typing import Sequence
+from typing import Iterable
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -9,9 +9,9 @@ class Trajectory:
 
     MAX_TOOL_ID: ClassVar[int] = 3
 
-    x_positions: Sequence[int]
+    x_positions: Iterable[int]
     """Позиции перемещений X"""
-    y_positions: Sequence[int]
+    y_positions: Iterable[int]
     """Позиции перемещений Y"""
     tool_id: int
     """Инструмент печати"""

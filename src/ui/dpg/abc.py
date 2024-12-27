@@ -51,6 +51,9 @@ class DPGItem(Item):
         """Получить конфигурацию объекта"""
         return dpg.get_item_configuration(self.__dpg_item_id)
 
+    def setTheme(self, theme: ItemID) -> None:
+        dpg.bind_item_theme(self.__dpg_item_id, theme)
+
 
 class VariableDPGItem[T](DPGItem, VariableItem[T]):
     def setValue(self, value: T) -> None:

@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Callable
 from typing import ClassVar
+from typing import Iterable
 from typing import Optional
-from typing import Sequence
 
 from figure.abc import Canvas
 from figure.abc import Figure
@@ -105,7 +105,7 @@ class TransformableFigure(Figure):
             movement_speed=self._speed_input.getValue()
         )
 
-    def getTransformedVertices(self) -> Vertices:
+    def getTransformedVertices(self) -> tuple[Iterable[int], Iterable[int]]:
         transformed_x = list[int]()
         transformed_y = list[int]()
 
@@ -119,8 +119,14 @@ class TransformableFigure(Figure):
             x *= size_x
             y *= size_y
 
-            transformed_x.append(int(cos_angle * x - sin_angle * y + position_x))
-            transformed_y.append(int(sin_angle * x + cos_angle * y + position_y))
+            new_x = int(cos_angle * x - sin_angle * y + position_x)
+            new_y = int(sin_angle * x + cos_angle * y + position_y)
+
+            if len(transformed_x) > 0 and (new_x == transformed_x[-1]) and (new_y == transformed_y[-1]):
+                continue
+
+            transformed_x.append(new_x)
+            transformed_y.append(new_y)
 
         return transformed_x, transformed_y
 
@@ -138,6 +144,8 @@ class TransformableFigure(Figure):
 
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
+        self.add(self._set_controls_visible_checkbox)
+        self.add(Button("Удалить", self.delete))
 
         (
             CollapsingHeader("Параметры Печати", default_open=True).place(self)
@@ -155,9 +163,6 @@ class TransformableFigure(Figure):
             .add(Separator())
             .add(self._input_position)
         )
-
-        self.add(self._set_controls_visible_checkbox)
-        self.add(Button("Удалить фигуру", self.delete))
 
     def __onPositionInputChange(self, new_position: Vec2i) -> None:
         self.setPosition(new_position)

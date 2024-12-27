@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
-from typing import Final
-from typing import Iterable
 
 from dearpygui import dearpygui as dpg
 
@@ -24,6 +22,7 @@ class Figure(LineSeries, ABC):
         self.__size = size
 
     def setVertices(self, new_vertices: Vertices) -> None:
+        """Задать значения вершин"""
         self._source_vertices_x, self._source_vertices_y = new_vertices
 
     @abstractmethod
@@ -43,7 +42,7 @@ class Figure(LineSeries, ABC):
         self.__size = size
 
     def update(self) -> None:
-        """Обновить показания на холста"""
+        """Обновить показания на холсте"""
         self.setValue(self.getTransformedVertices())
 
 

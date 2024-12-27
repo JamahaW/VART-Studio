@@ -5,6 +5,7 @@ from figure.impl.transformable import TransformableFigure
 from gen.vertex import VertexGenerator
 from gen.vertex import Vertices
 from ui.abc import ItemID
+from ui.dpg.impl import CollapsingHeader
 from ui.dpg.impl import InputInt
 from ui.dpg.impl import SliderInt
 
@@ -15,18 +16,20 @@ class GenerativeFigure(TransformableFigure):
         super().__init__((tuple(), tuple()), label, on_delete)
 
         self._resolution_input = SliderInt(
-            "Resolution",
+            "Разрешение",
             value_range=VertexGenerator.getResolutionRange(),
             default_value=VertexGenerator.MIN_RESOLUTION,
             on_change=lambda _: self.update(),
         )
 
+        self._header = CollapsingHeader("Прочее", default_open=True)
+
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
-        self.add(self._resolution_input)
-        # self.setVertices(self.getTransformedVertices())
+        self._header.place(self).add(self._resolution_input)
 
     def getResolution(self) -> int:
+        """Получить разрешение"""
         return self._resolution_input.getValue()
 
     @abstractmethod
@@ -44,19 +47,19 @@ class RectFigure(GenerativeFigure):
         return VertexGenerator.rect(self.getResolution())
 
 
-class PerfectPolygon(GenerativeFigure):
+class PolygonFigure(GenerativeFigure):
 
     def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
         super().__init__(label, on_delete)
-
-        self._vertex_count = InputInt("Количество вершин", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=4, value_range=VertexGenerator.getPolygonRange())
+        self._vertex_count = InputInt("Вершины", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=6, value_range=VertexGenerator.getPolygonRange())
 
     def _generateVertices(self) -> Vertices:
         return VertexGenerator.nGon(self.getVertexCount(), self.getResolution())
 
     def getVertexCount(self) -> int:
+        """Получить количество вершин полигона"""
         return self._vertex_count.getValue()
 
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
-        self.add(self._vertex_count)
+        self._header.add(self._vertex_count)

@@ -14,7 +14,6 @@ from figure.impl.workarea import WorkAreaFigure
 from figure.registry import FigureRegistry
 from gen.settings import GeneratorSettings
 from gen.writer import CodeWriter
-from ui.custom.input2d import InputInt2D
 from ui.custom.logger import LoggerWidget
 from ui.dpg.impl import Button
 from ui.dpg.impl import FileDialog
@@ -25,32 +24,33 @@ class Application:
     """Приложение"""
 
     def __init__(self, resources_path: Path) -> None:
-        self.logger = LoggerWidget()
-        self.log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME | LogFlag.BYTECODE
+        self._logger = LoggerWidget()
+        self._log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME  # | LogFlag.BYTECODE
 
-        self.image_file_dialog = FileDialog(
+        self._image_file_dialog = FileDialog(
             "Укажите файл изображения для вставки", self.onImageFileSelected,
             (("png", "Image"),),
             resources_path / "res/images"
         )
 
-        self.export_file_dialog = FileDialog(
+        self._export_file_dialog = FileDialog(
             "Укажите файл для экспорта", lambda paths: self._onWriteBytecode(paths[0]),
             extensions=(("blc", "VART ByteCode"),),
             default_path=(resources_path / "res/out")
         )
 
-        self.work_area = WorkAreaFigure("Рабочая область")
-        self.figure_registry = FigureRegistry(Canvas())
+        self._work_area = WorkAreaFigure("Рабочая область")
 
-        self.generator_settings = GeneratorSettings(
+        self._figure_registry = FigureRegistry(Canvas())
+
+        self._generator_settings = GeneratorSettings(
             speed=5,
             end_speed=10,
             tool_none=0,
             disconnect_distance_mm=5,
             tool_change_duration_ms=500
         )
-        self.bytecode_writer = CodeWriter.simpleSetup(resources_path / "res")
+        self._bytecode_writer = CodeWriter.simpleSetup(resources_path / "res")
 
     @staticmethod
     def onImageFileSelected(paths: Sequence[Path]) -> None:
@@ -61,20 +61,20 @@ class Application:
         print(paths)
 
     def _printTrajectories(self) -> None:
-        self.logger.write("\n".join(map(str, self.figure_registry.getTrajectories())))
+        self._logger.write("\n".join(map(str, self._figure_registry.getTrajectories())))
 
     def _onWriteBytecode(self, output_path: Path) -> None:
         with open(output_path, "wb") as bytecode_stream:
-            trajectories = self.figure_registry.getTrajectories()
+            trajectories = self._figure_registry.getTrajectories()
 
-            result = self.bytecode_writer.run(
-                self.generator_settings,
+            result = self._bytecode_writer.run(
+                self._generator_settings,
                 trajectories,
                 bytecode_stream,
-                self.log_flags
+                self._log_flags
             )
 
-            self.logger.write(result.getMessage())
+            self._logger.write(result.getMessage())
 
     def build(self) -> None:
         """Построить UI приложения"""
@@ -84,19 +84,18 @@ class Application:
             with dpg.menu_bar():
                 (
                     Menu("Файл").place()
-                    .add(Button("Открыть", self.image_file_dialog.show))
-                    .add(Button("Экспорт", self.export_file_dialog.show))
+                    .add(Button("Открыть", self._image_file_dialog.show))
+                    .add(Button("Экспорт", self._export_file_dialog.show))
                 )
 
                 dpg.add_separator()
 
-                Button("Очистить", self.figure_registry.clear).place()
+                Button("Очистить", self._figure_registry.clear).place()
 
                 (
                     Menu("Вставка").place()
-                    .add(Button("Круг", self.figure_registry.addDemoCircle))
-                    .add(Button("Треугольник", self.figure_registry.addDemoTriangle))
-                    .add(Button("Прямоугольник", self.figure_registry.addDemoRect))
+                    .add(Button("Полигон", self._figure_registry.addPolygon))
+                    .add(Button("Прямоугольник", self._figure_registry.addDemoRect))
                 )
 
                 dpg.add_separator()
@@ -115,33 +114,22 @@ class Application:
 
             with dpg.tab_bar():
                 with dpg.tab(label="Область печати"):
-                    self.figure_registry.canvas.place()
+                    self._figure_registry.canvas.place()
 
                 with dpg.tab(label="Параметры"):
-                    CodeGeneratorSettngsWidget(self.generator_settings).place()
+                    CodeGeneratorSettngsWidget(self._generator_settings).place()
 
                 with dpg.tab(label="Logs"):
-                    self.logger.place()
+                    self._logger.place()
 
                 with dpg.tab(label="Test"):
-                    InputInt2D(
-                        "Input 2D",
-                        (lambda v: print(v)),
-                        default_value=(123, 456),
-                        value_range=(-1234, 1234),
-                        x_label="Иксы",
-                        y_label="Игреки",
-                        step=1,
-                        step_fast=100,
-                        reset_button=True,
-                        is_horizontal=True
-                    ).place()
+                    pass
 
-        self.figure_registry.canvas.addFigure(self.work_area)
-        self.figure_registry.addDemoRect()
+        self._figure_registry.canvas.addFigure(self._work_area)
+        self._figure_registry.addPolygon()
 
-        self.work_area.setDeadZone(150, 150, 100, 300, -120)
-        self.work_area.setSize((1200, 1200))
+        self._work_area.setDeadZone(150, 150, 100, 300, -120)
+        self._work_area.setSize((1200, 1200))
 
         self._makeTheme()
 

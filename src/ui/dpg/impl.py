@@ -8,10 +8,12 @@ from typing import Sequence
 
 from dearpygui import dearpygui as dpg
 
+from gen.vertex import Vertices
 from ui.abc import Color3i
 from ui.abc import Container
 from ui.abc import ItemID
 from ui.abc import Placeable
+from ui.color import DRAG_LINE
 from ui.dpg.abc import DPGItem
 from ui.dpg.abc import RangedDPGItem
 from ui.dpg.abc import VariableDPGItem
@@ -124,7 +126,6 @@ class FileDialog(DPGItem):
 
 
 class DragLine(VariableDPGItem[float], Placeable):
-    DEFAULT_COLOR = (255, 0X74, 0)
 
     def __init__(self, is_vertical: bool, on_change: Callable[[float], None] = None) -> None:
         super().__init__()
@@ -132,7 +133,7 @@ class DragLine(VariableDPGItem[float], Placeable):
         self.__on_change = None if on_change is None else lambda: on_change(self.getValue())
 
     def placeRaw(self, parent_id: ItemID) -> None:
-        self.setItemID(dpg.add_drag_line(color=self.DEFAULT_COLOR, vertical=self.__is_vertical, callback=self.__on_change, parent=parent_id))
+        self.setItemID(dpg.add_drag_line(color=DRAG_LINE.toTuple(), vertical=self.__is_vertical, callback=self.__on_change, parent=parent_id))
         del self.__is_vertical
         del self.__on_change
 
@@ -193,7 +194,7 @@ class Axis(DPGItem, Placeable, Container):
         del self.__type
 
 
-class LineSeries(VariableDPGItem[tuple[Iterable[float], Iterable[float]]], Placeable, Container):
+class LineSeries(VariableDPGItem[Vertices], Placeable, Container):
 
     def __init__(self, label: str = None) -> None:
         super().__init__()

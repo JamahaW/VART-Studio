@@ -1,5 +1,6 @@
 from typing import Callable
 
+from gen.vertex import Vec2f
 from ui.abc import ItemID
 from ui.abc import Placeable
 from ui.abc import VariableItem
@@ -57,16 +58,16 @@ class BorderLinePair(Placeable, VariableItem[float]):
             self.__on_change(half_size * 2)
 
 
-class Border(Placeable, VariableItem[tuple[float, float]]):
+class Border(Placeable, VariableItem[Vec2f]):
 
-    def __init__(self, on_change: Callable[[tuple[float, float]], None] = None, *, step: int) -> None:
+    def __init__(self, on_change: Callable[[Vec2f], None] = None, *, step: int) -> None:
         on_width_changed = None if on_change is None else lambda width: on_change((width, self.__height_lines.getValue()))
         on_height_changed = None if on_change is None else lambda height: on_change((self.__width_lines.getValue(), height))
         self.__on_change = on_change
         self.__width_lines = BorderLinePair(True, on_width_changed, step=step)
         self.__height_lines = BorderLinePair(False, on_height_changed, step=step)
 
-    def setValue(self, size: tuple[float, float]) -> None:
+    def setValue(self, size: Vec2f) -> None:
         width, height = size
         self.__width_lines.setValue(width)
         self.__height_lines.setValue(height)
@@ -74,7 +75,7 @@ class Border(Placeable, VariableItem[tuple[float, float]]):
         if self.__on_change:
             self.__on_change(size)
 
-    def getValue(self) -> tuple[float, float]:
+    def getValue(self) -> Vec2f:
         return self.__width_lines.getValue(), self.__height_lines.getValue()
 
     def show(self) -> None:
