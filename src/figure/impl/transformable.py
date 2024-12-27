@@ -10,10 +10,11 @@ from typing import Sequence
 
 from figure.abc import Canvas
 from figure.abc import Figure
-from figure.abc import Vec2f
-from figure.abc import Vec2i
 from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
+from gen.vertex import Vec2f
+from gen.vertex import Vec2i
+from gen.vertex import Vertices
 from ui.abc import ItemID
 from ui.custom.input2d import InputInt2D
 from ui.dpg.impl import Button
@@ -29,7 +30,7 @@ class TransformableFigure(Figure):
     INPUT_WIDTH: ClassVar[int] = 200
     DEFAULT_SIZE: ClassVar[Vec2i] = (100, 100)
 
-    def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
+    def __init__(self, vertices: Vertices, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
         super().__init__(vertices, label, self.DEFAULT_SIZE)
 
         self._on_delete = on_delete
@@ -104,7 +105,7 @@ class TransformableFigure(Figure):
             movement_speed=self._speed_input.getValue()
         )
 
-    def getTransformedVertices(self) -> tuple[Sequence[int], Sequence[int]]:
+    def getTransformedVertices(self) -> Vertices:
         transformed_x = list[int]()
         transformed_y = list[int]()
 

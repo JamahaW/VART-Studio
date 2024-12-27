@@ -1,77 +1,105 @@
 from itertools import chain
+from itertools import pairwise
 from math import cos
 from math import pi
+from math import radians
 from math import sin
 from pathlib import Path
+from typing import Final
 from typing import Iterable
 
+Vertices = tuple[Iterable[float], Iterable[float]]
+
 type Number = int | float
-
-type Vertices[T] = tuple[Iterable[T], Iterable[T]]
 type Vec2D[T] = tuple[T, T]
-
-
-def mix[T: Number](__from: T, __end: T, t: float) -> T:
-    return __end * t + (1.0 - t) * __from
+Vec2f = Vec2D[float]
+Vec2i = Vec2D[int]
 
 
 class VertexGenerator:
+    MIN_RESOLUTION: Final[int] = 10
+    MAX_RESOLUTION: Final[int] = 1000
 
     @classmethod
-    def spiral(cls, radius: int, vertex_count: int, k: float = 1.0) -> Vertices[int]:
-        k2_pi_p = 2 * k * pi / vertex_count
-        r_p = radius / vertex_count
+    def getResolutionRange(cls) -> tuple[int, int]:
+        return cls.MAX_RESOLUTION, cls.MAX_RESOLUTION
 
+    @classmethod
+    def spiral(cls, resolution: int, k: float = 1.0) -> Vertices:
+        k2_pi_p = 2 * k * pi / resolution
         return (
-            map(lambda a: int(sin(a * k2_pi_p) * a * r_p), cls.range(vertex_count)),
-            map(lambda a: int(cos(a * k2_pi_p) * a * r_p), cls.range(vertex_count))
+            map(lambda a: sin(a * k2_pi_p) * a / resolution, cls.range(resolution)),
+            map(lambda a: cos(a * k2_pi_p) * a / resolution, cls.range(resolution))
         )
 
     @classmethod
-    def circle(cls, radius: int, vertex_count: int) -> Vertices[int]:
-        k2_pi_p = 2 * pi / vertex_count
-
+    def circle(cls, resolution: int) -> Vertices:
+        k2_pi_p = 2 * pi / resolution
         return (
-            map(lambda a: int(sin(a * k2_pi_p) * radius), cls.range(vertex_count)),
-            map(lambda a: int(cos(a * k2_pi_p) * radius), cls.range(vertex_count))
+            map(lambda a: sin(a * k2_pi_p), cls.range(resolution)),
+            map(lambda a: cos(a * k2_pi_p), cls.range(resolution))
         )
 
     @classmethod
-    def rect(cls, width: int, height: int, width_vertex_count: int) -> Vertices[int]:
-        half_width = width // 2
-        half_height = height // 2
+    def nGon(cls, vertex_count: int, resolution: int) -> Vertices:
+        angles = tuple(map(radians, range(0, 360, cls.calcNGonAngle(vertex_count))))
+        return cls.polygon((map(sin, angles), map(cos, angles)), resolution)
 
-        vertices_on_height = height * width_vertex_count // width
+    @classmethod
+    def rect(cls, resolution: int) -> Vertices:
+        return cls.polygon(((1, -1, -1, 1), (1, 1, -1, -1)), resolution)
 
-        a = half_width, half_height
-        b = -half_width, half_height
-        c = -half_width, -half_height
-        d = half_width, -half_height
+    @classmethod
+    def calcNGonAngle(cls, vertex_count: int) -> int:
+        return cls.calcNGonSumAngle(vertex_count) // vertex_count
 
-        line_params = (
-            (a, b, vertices_on_height),
-            (b, c, width_vertex_count),
-            (c, d, vertices_on_height),
-            (d, a, width_vertex_count)
-        )
+    @classmethod
+    def calcNGonSumAngle(cls, vertex_count: int) -> int:
+        if vertex_count > 2:
+            return (vertex_count - 2) * 180
 
-        x, y = tuple(zip(*(map(lambda _: cls.line(*_), line_params))))
+        raise ValueError(f"Invalid vertex_count: {vertex_count}")
+
+    @classmethod
+    def polygon(cls, vertices: Vertices, resolution: int) -> Vertices:
+        x, y = zip(*(map(lambda _: cls.line(*_), (
+            (*pos, resolution)
+            for pos in pairwise(cls.appendFirst(zip(*vertices)))
+        ))))
         return chain(*x), chain(*y)
 
     @classmethod
-    def line[T: Number](cls, begin: Vec2D[T], end: Vec2D[T], vertex_count: int) -> Vertices[T]:
+    def line[T: Number](cls, begin: Vec2D[T], end: Vec2D[T], resolution: int) -> Vertices:
         x0, y0 = begin
         x1, y1 = end
-        return map(lambda t: mix(x0, x1, t), cls.rangeNorm(vertex_count)), map(lambda t: mix(y0, y1, t), cls.rangeNorm(vertex_count))
+        return (
+            map(lambda t: cls.mix(x0, x1, t), cls.rangeNorm(resolution)),
+            map(lambda t: cls.mix(y0, y1, t), cls.rangeNorm(resolution))
+        )
 
     @classmethod
-    def rangeNorm(cls, vertex_count: int) -> Iterable[float]:
-        return map(lambda n: n / vertex_count, cls.range(vertex_count))
+    def rangeNorm(cls, resolution: int) -> Iterable[float]:
+        return map(lambda n: n / resolution, cls.range(resolution))
 
     @staticmethod
-    def range(vertex_count: int) -> Iterable[int]:
-        return range(vertex_count + 1)
+    def range(resolution: int) -> Iterable[int]:
+        return range(resolution + 1)
+
+    @staticmethod
+    def appendFirst[T](i: Iterable[T]) -> Iterable[T]:
+        i = iter(i)
+        first = next(i, None)
+
+        if first is not None:
+            yield first
+
+        yield from i
+        yield first
+
+    @staticmethod
+    def mix[T: Number](__from: T, __end: T, t: float) -> T:
+        return __end * t + (1.0 - t) * __from
 
     @classmethod
-    def fromImage(cls, path: Path) -> Vertices[int]:
+    def fromImage(cls, path: Path) -> Vertices:
         pass

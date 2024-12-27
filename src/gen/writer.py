@@ -9,7 +9,7 @@ from bytelang.compiler import ByteLangCompiler
 from bytelang.core.results.compile.abc import CompileResult
 from bytelang.tools.string import FixedStringIO
 from bytelang.utils import LogFlag
-from gen.code import CodeGenerator
+from gen.codes import CodeGenerator
 from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
 
@@ -34,7 +34,7 @@ class CodeWriter:
         self.__code_generator.run(stream, config, contours)
 
         stream.seek(0)
-        
+
         print(stream.getvalue())
 
         return self.__bytelang.compile(stream, bytecode_stream, log_flag)

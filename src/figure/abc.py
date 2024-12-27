@@ -3,32 +3,31 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 from typing import Final
-from typing import Sequence
+from typing import Iterable
 
 from dearpygui import dearpygui as dpg
 
+from gen.vertex import Vec2i
+from gen.vertex import Vertices
 from ui.abc import ItemID
 from ui.dpg.impl import Axis
 from ui.dpg.impl import LineSeries
 from ui.dpg.impl import Plot
 
-type Vec2[T] = tuple[T, T]
-Vec2f = Vec2[float]
-Vec2i = Vec2[int]
-
 
 class Figure(LineSeries, ABC):
     """Фигура, изображенная на холсте"""
 
-    def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str, size: Vec2i = (0, 0)) -> None:
+    def __init__(self, vertices: Vertices, label: str, size: Vec2i = (0, 0)) -> None:
         super().__init__(label)
-        source_x, source_y = vertices
-        self._source_vertices_x: Final[Sequence[float]] = source_x
-        self._source_vertices_y: Final[Sequence[float]] = source_y
+        self._source_vertices_x, self._source_vertices_y = vertices
         self.__size = size
 
+    def setVertices(self, new_vertices: Vertices) -> None:
+        self._source_vertices_x, self._source_vertices_y = new_vertices
+
     @abstractmethod
-    def getTransformedVertices(self) -> tuple[Sequence[float], Sequence[float]]:
+    def getTransformedVertices(self) -> Vertices:
         """Получить трансформированные вершины"""
 
     @abstractmethod
