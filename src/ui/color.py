@@ -35,5 +35,5 @@ class Color:
         return self._key()
 
 
-DRAG_LINE = Color(0xFF, 0x60, 0x10)
+DRAG_LINE = Color(0x10, 0x90, 0x90)
 WORK_AREA = DRAG_LINE.brighter()

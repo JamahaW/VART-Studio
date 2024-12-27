@@ -47,6 +47,26 @@ class RectFigure(GenerativeFigure):
         return VertexGenerator.rect(self.getResolution())
 
 
+class CircleFigure(GenerativeFigure):
+
+    def _generateVertices(self) -> Vertices:
+        return VertexGenerator.circle(self.getResolution())
+
+
+class SpiralFigure(GenerativeFigure):
+
+    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
+        super().__init__(label, on_delete)
+        self._repeats_count = InputInt("Кол-во витков", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=1, value_range=VertexGenerator.getSpiralRepeatsRange())
+
+    def _generateVertices(self) -> Vertices:
+        return VertexGenerator.spiral(self.getResolution(), self._repeats_count.getValue())
+
+    def placeRaw(self, parent_id: ItemID) -> None:
+        super().placeRaw(parent_id)
+        self._header.add(self._repeats_count)
+
+
 class PolygonFigure(GenerativeFigure):
 
     def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:

@@ -16,6 +16,7 @@ from gen.vertex import Vec2f
 from gen.vertex import Vec2i
 from gen.vertex import Vertices
 from ui.abc import ItemID
+from ui.color import Color
 from ui.custom.input2d import InputInt2D
 from ui.dpg.impl import Button
 from ui.dpg.impl import Checkbox
@@ -24,11 +25,21 @@ from ui.dpg.impl import DragPoint
 from ui.dpg.impl import InputInt
 from ui.dpg.impl import Separator
 from ui.dpg.impl import SliderInt
+from ui.dpg.theme import LineSeriesTheme
 
 
 class TransformableFigure(Figure):
     INPUT_WIDTH: ClassVar[int] = 200
     DEFAULT_SIZE: ClassVar[Vec2i] = (100, 100)
+
+    COLORS: ClassVar[int, Color] = {
+        0: Color(0xFF, 0, 0, 0x80),
+        1: Color(0xFF, 0x80, 0x20),
+        2: Color(0x20, 0xFF, 0x80),
+        3: Color(0x20, 0x80, 0xFF),
+    }
+
+    COLOR_NOT_PRINT = Color(0x80, 0x80, 0x80, 0x80)
 
     def __init__(self, vertices: Vertices, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
         super().__init__(vertices, label, self.DEFAULT_SIZE)
@@ -36,14 +47,15 @@ class TransformableFigure(Figure):
         self._on_delete = on_delete
 
         self._speed_input = SliderInt("Скорость", value_range=GeneratorSettings.getSpeedRange())
-        self._tool_id_input = InputInt("Инструмент", value_range=(1, Trajectory.MAX_TOOL_ID), default_value=1, width=self.INPUT_WIDTH)
+        self._tool_id_input = InputInt("Инструмент", self.__updateDisplayColor, value_range=(1, Trajectory.MAX_TOOL_ID), default_value=1, width=self.INPUT_WIDTH)
 
         self._rotation_input = InputInt("Поворот", self.__onRotationInputChanged, value_range=(-360, 360), default_value=0, step=2, step_fast=5, width=self.INPUT_WIDTH)
 
         self._position_point = DragPoint(self.__onPositionPointChanged, label="Position")
         self._size_point = DragPoint(self.__onSizeChanged, label="Размер", default_value=self.getSize())
-        self._set_controls_visible_checkbox = Checkbox(self.__onSetControlsVisibleChanged, label="Видимость элементов управления", default_value=True)
-        self._set_export_checkbox = Checkbox(label="Для печати", default_value=True)
+        self._controls_visibility_checkbox = Checkbox(self.__onSetControlsVisibleChanged, label="Видимость элементов управления", default_value=True)
+        self._export_checkbox = Checkbox(self.__updateDisplayColor, label="Для печати", default_value=True)
+        self._show_points_checkbox = Checkbox(self.__updateDisplayColor, label="Показать вершины", default_value=False)
 
         self._input_scale = InputInt2D(
             "Масштаб",
@@ -71,6 +83,20 @@ class TransformableFigure(Figure):
         self.__cos_angle: float = 0
         self.__calcRotation(0)
 
+    def _getToolColor(self) -> Color:
+        return self.COLORS.get(self._tool_id_input.getValue(), 0)
+
+    def _getDisplayColor(self) -> Color:
+        if self._export_checkbox.getValue():
+            return self._getToolColor()
+        return self.COLOR_NOT_PRINT
+
+    def __updateDisplayColor(self, _=None) -> None:
+        self._setColor(self._getDisplayColor(), self._show_points_checkbox.getValue())
+
+    def _setColor(self, color: Color, has_points: bool) -> None:
+        self.setTheme(LineSeriesTheme.getInstance().get(color, has_dots=has_points))
+
     def __calcRotation(self, angle_degrees: float) -> None:
         angle_radians = math.radians(angle_degrees)
         self.__sin_angle = math.sin(angle_radians)
@@ -94,7 +120,7 @@ class TransformableFigure(Figure):
     def toTrajectory(self) -> Optional[Trajectory]:
         """Конвертировать фигуру в траекторию"""
 
-        if not self._set_export_checkbox.getValue():
+        if not self._export_checkbox.getValue():
             return
 
         x, y = self.getTransformedVertices()
@@ -144,12 +170,12 @@ class TransformableFigure(Figure):
 
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
-        self.add(self._set_controls_visible_checkbox)
+        self.add(self._controls_visibility_checkbox)
         self.add(Button("Удалить", self.delete))
 
         (
             CollapsingHeader("Параметры Печати", default_open=True).place(self)
-            .add(self._set_export_checkbox)
+            .add(self._export_checkbox)
             .add(self._tool_id_input)
             .add(self._speed_input)
             .add(Separator())
@@ -163,6 +189,11 @@ class TransformableFigure(Figure):
             .add(Separator())
             .add(self._input_position)
         )
+
+        self.add(self._show_points_checkbox)
+        self.add(Separator())
+
+        self.__updateDisplayColor()
 
     def __onPositionInputChange(self, new_position: Vec2i) -> None:
         self.setPosition(new_position)

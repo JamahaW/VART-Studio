@@ -95,7 +95,9 @@ class Application:
                 (
                     Menu("Вставка").place()
                     .add(Button("Полигон", self._figure_registry.addPolygon))
-                    .add(Button("Прямоугольник", self._figure_registry.addDemoRect))
+                    .add(Button("Прямоугольник", self._figure_registry.addRect))
+                    .add(Button("Круг", self._figure_registry.addCircle))
+                    .add(Button("Спираль", self._figure_registry.addSpiral))
                 )
 
                 dpg.add_separator()
@@ -119,7 +121,7 @@ class Application:
                 with dpg.tab(label="Параметры"):
                     CodeGeneratorSettngsWidget(self._generator_settings).place()
 
-                with dpg.tab(label="Logs"):
+                with dpg.tab(label="Журнал"):
                     self._logger.place()
 
                 with dpg.tab(label="Test"):

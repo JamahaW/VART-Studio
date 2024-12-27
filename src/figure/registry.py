@@ -4,8 +4,10 @@ from typing import Iterable
 from typing import Sequence
 
 from figure.abc import Canvas
+from figure.impl.generative import CircleFigure
 from figure.impl.generative import PolygonFigure
 from figure.impl.generative import RectFigure
+from figure.impl.generative import SpiralFigure
 from figure.impl.transformable import TransformableFigure
 from gen.trajectory import Trajectory
 
@@ -35,9 +37,17 @@ class FigureRegistry:
         """Добавить полигон"""
         self.add(PolygonFigure(self._makeName("Полигон"), self.__onFigureDelete))
 
-    def addDemoRect(self) -> None:
+    def addRect(self) -> None:
         """Добавить демо-прямоугольник"""
         self.add(RectFigure(self._makeName("Прямоугольник"), self.__onFigureDelete))
+
+    def addSpiral(self) -> None:
+        """Добавить спираль"""
+        self.add(SpiralFigure(self._makeName("Спираль"), self.__onFigureDelete))
+
+    def addCircle(self) -> None:
+        """Добавить круг"""
+        self.add(CircleFigure(self._makeName("Круг"), self.__onFigureDelete))
 
     def clear(self) -> None:
         """Удалить все фигуры"""

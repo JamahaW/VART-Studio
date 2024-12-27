@@ -21,7 +21,14 @@ class VertexGenerator:
     MAX_RESOLUTION: Final[int] = 1000
 
     MIN_POLYGON_VERTEX_COUNT: Final[int] = 3
-    MAX_POLYGON_VERTEX_COUNT: Final[int] = 100
+    MAX_POLYGON_VERTEX_COUNT: Final[int] = 20
+
+    MIN_SPIRAL_REPEATS: Final[int] = 1
+    MAX_SPIRAL_REPEATS: Final[int] = 50
+
+    @classmethod
+    def getSpiralRepeatsRange(cls) -> tuple[int, int]:
+        return cls.MIN_SPIRAL_REPEATS, cls.MAX_SPIRAL_REPEATS
 
     @classmethod
     def getResolutionRange(cls) -> tuple[int, int]:
