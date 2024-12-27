@@ -79,7 +79,7 @@ class WorkAreaFigure(Figure):
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
 
-        dead_zone_header = CollapsingHeader("DeadZone")
+        dead_zone_header = CollapsingHeader("Настройки мёртвой зоны", default_open=True)
         self.add(dead_zone_header)
         (
             dead_zone_header

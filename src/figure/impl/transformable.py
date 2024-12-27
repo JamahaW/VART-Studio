@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from typing import Callable
 from typing import Optional
 from typing import Sequence
 
@@ -14,34 +15,38 @@ from gen.trajectory import Trajectory
 from ui.abc import ItemID
 from ui.dpg.impl import Button
 from ui.dpg.impl import Checkbox
+from ui.dpg.impl import CollapsingHeader
 from ui.dpg.impl import DragPoint
 from ui.dpg.impl import InputInt
 from ui.dpg.impl import Separator
 from ui.dpg.impl import SliderInt
+from ui.dpg.impl import Text
 
 
 class TransformableFigure(Figure):
 
-    def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str) -> None:
+    def __init__(self, vertices: tuple[Sequence[float], Sequence[float]], label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
         super().__init__(vertices, label, (100, 100))
+
+        self._on_delete = on_delete
 
         self.__sin_angle: float = 0
         self.__cos_angle: float = 0
         self.setRotation(0)
 
-        self._tool_id: int = 0
-        self._movement_speed: int = 0
+        self._speed_input = SliderInt("Скорость", value_range=GeneratorSettings.getSpeedRange())
+        self._tool_id_input = InputInt("Tool-ID", value_range=(1, Trajectory.MAX_TOOL_ID))
 
         self._position_point = DragPoint(self.__onPositionPointChanged, label="Position")
-        self._size_point = DragPoint(self.__onSizeChanged, label="Size", default_value=self.getSize())
-        self._set_controls_visible_checkbox = Checkbox(self.__onSetControlsVisibleChanged, label="Controls Visibility", default_value=True)
-        self._set_export_checkbox = Checkbox(label="Export", default_value=True)
+        self._size_point = DragPoint(self.__onSizeChanged, label="Размер", default_value=self.getSize())
+        self._set_controls_visible_checkbox = Checkbox(self.__onSetControlsVisibleChanged, label="Видимость элементов управления", default_value=True)
+        self._set_export_checkbox = Checkbox(label="Для печати", default_value=True)
 
         x, y = self.getSize()
-        self._input_scale_x = InputInt("Scale-X", self.__updateScaleX, value_range=(0, 10000), default_value=int(x))
-        self._input_scale_y = InputInt("Scale-Y", self.__updateScaleY, value_range=(0, 10000), default_value=int(y))
-        self._input_position_x = InputInt("Position-X", self.__updatePositionX, value_range=(-10000, 10000))
-        self._input_position_y = InputInt("Position-Y", self.__updatePositionY, value_range=(-10000, 10000))
+        self._input_scale_x = InputInt("X", self.__updateScaleX, value_range=(0, 10000), default_value=int(x))
+        self._input_scale_y = InputInt("Y", self.__updateScaleY, value_range=(0, 10000), default_value=int(y))
+        self._input_position_x = InputInt("X", self.__updatePositionX, value_range=(-10000, 10000))
+        self._input_position_y = InputInt("Y", self.__updatePositionY, value_range=(-10000, 10000))
 
     def setRotation(self, angle: int) -> None:
         """Установить поворот"""
@@ -74,8 +79,8 @@ class TransformableFigure(Figure):
         return Trajectory(
             x_positions=x,
             y_positions=y,
-            tool_id=self._tool_id,
-            movement_speed=self._movement_speed
+            tool_id=self._tool_id_input.getValue(),
+            movement_speed=self._speed_input.getValue()
         )
 
     def getTransformedVertices(self) -> tuple[Sequence[int], Sequence[int]]:
@@ -105,31 +110,37 @@ class TransformableFigure(Figure):
 
     def delete(self) -> None:
         super().delete()
+        self._on_delete(self)
         self._position_point.delete()
         self._size_point.delete()
 
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
 
-        self.add(self._set_export_checkbox)
+        (
+            CollapsingHeader("Параметры Печати", default_open=True).place(self)
+            .add(self._set_export_checkbox)
+            .add(self._tool_id_input)
+            .add(self._speed_input)
+            .add(Separator())
+        )
+
+        (
+            CollapsingHeader("Трансформация", default_open=True).place(self)
+            .add(Text("Масштаб"))
+            .add(self._input_scale_x)
+            .add(self._input_scale_y)
+            .add(Separator())
+            .add(InputInt("Поворот", self.__onRotationChanged, value_range=(-360, 360), default_value=0, step_fast=15))
+            .add(Separator())
+            .add(Text("Позиция"))
+            .add(self._input_position_x)
+            .add(self._input_position_y)
+            .add(Separator())
+        )
+
         self.add(self._set_controls_visible_checkbox)
-        self.add(InputInt("Tool-ID", self.__onToolIdChanged, value_range=GeneratorSettings.getSpeedRange()))
-        self.add(SliderInt("Speed", self.__onMovementSpeedChanged, value_range=GeneratorSettings.getSpeedRange()))
-
-        self.add(Separator())
-
-        self.add(self._input_scale_x)
-        self.add(self._input_scale_y)
-        self.add(InputInt("Rotation", self.__onRotationChanged, value_range=(-360, 360), step=5, default_value=0))
-
-        self.add(Separator())
-
-        self.add(self._input_position_x)
-        self.add(self._input_position_y)
-
-        self.add(Separator())
-
-        self.add(Button("Remove", self.delete))
+        self.add(Button("Удалить фигуру", self.delete))
 
     def __updatePositionX(self, new_x: float) -> None:
         _, y = self.getPosition()
@@ -161,12 +172,6 @@ class TransformableFigure(Figure):
     def __updateSizePoint(self, position_x: float, position_y: float) -> None:
         scale_x, scale_y = self.getSize()
         self._size_point.setValue(((position_x + scale_x), (position_y + scale_y)))
-
-    def __onMovementSpeedChanged(self, new_speed: int) -> None:
-        self._movement_speed = new_speed
-
-    def __onToolIdChanged(self, new_tool_id: int) -> None:
-        self._tool_id = new_tool_id
 
     def __onSizeChanged(self, new_scale: Vec2f) -> None:
         scale_x, scale_y = new_scale

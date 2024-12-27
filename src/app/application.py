@@ -16,6 +16,7 @@ from gen.settings import GeneratorSettings
 from gen.writer import CodeWriter
 from ui.custom.logger import LoggerWidget
 from ui.dpg.impl import Button
+from ui.dpg.impl import ChildWindow
 from ui.dpg.impl import FileDialog
 from ui.dpg.impl import Menu
 
@@ -23,18 +24,20 @@ from ui.dpg.impl import Menu
 class Application:
     """Приложение"""
 
-    def __init__(self) -> None:
+    def __init__(self, resources_path: Path) -> None:
         self.logger = LoggerWidget()
+        self.log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME | LogFlag.BYTECODE
+
         self.image_file_dialog = FileDialog(
             "Select Image file", self.onImageFileSelected,
             (("png", "Image"),),
-            r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res\images"
+            resources_path / "res/images"
         )
 
         self.export_file_dialog = FileDialog(
             "Select Dest Export Bytecode", lambda paths: self._onWriteBytecode(paths[0]),
             extensions=(("blc", "VART ByteCode"),),
-            default_path=r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res\out"
+            default_path=(resources_path / "res/out")
         )
 
         self.work_area = WorkAreaFigure("Work Area")
@@ -47,7 +50,7 @@ class Application:
             disconnect_distance_mm=5,
             tool_change_duration_ms=500
         )
-        self.bytecode_writer = CodeWriter.simpleSetup(r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res")
+        self.bytecode_writer = CodeWriter.simpleSetup(resources_path / "res")
 
     @staticmethod
     def onImageFileSelected(paths: Sequence[Path]) -> None:
@@ -57,12 +60,20 @@ class Application:
         """
         print(paths)
 
-    def _testShowFigures(self) -> None:
-        print("\n".join(map(str, self.figure_registry.getTrajectories())))
+    def _printTrajectories(self) -> None:
+        self.logger.write("\n".join(map(str, self.figure_registry.getTrajectories())))
 
     def _onWriteBytecode(self, output_path: Path) -> None:
         with open(output_path, "wb") as bytecode_stream:
-            result = self.bytecode_writer.run(self.generator_settings, self.figure_registry.getTrajectories(), bytecode_stream, LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME | LogFlag.BYTECODE)
+            trajectories = self.figure_registry.getTrajectories()
+
+            result = self.bytecode_writer.run(
+                self.generator_settings,
+                trajectories,
+                bytecode_stream,
+                self.log_flags
+            )
+
             self.logger.write(result.getMessage())
 
     def build(self) -> None:
@@ -77,18 +88,22 @@ class Application:
                     .add(Button("Export", self.export_file_dialog.show))
                 )
 
+                dpg.add_separator()
+
+                Button("Clear", self.figure_registry.clear).place()
+
                 (
-                    Menu("dev").place()
-                    .add(Button("circle", self.figure_registry.addDemoCircle))
-                    .add(Button("triangle", self.figure_registry.addDemoTriangle))
-                    .add(Button("rect", self.figure_registry.addDemoRect))
-                    .add(Button("print trajectories", self._testShowFigures))
+                    Menu("Add").place()
+                    .add(Button("Circle", self.figure_registry.addDemoCircle))
+                    .add(Button("Triangle", self.figure_registry.addDemoTriangle))
+                    .add(Button("Rect", self.figure_registry.addDemoRect))
                 )
 
                 dpg.add_separator()
 
                 (
-                    Menu("Show").place()
+                    Menu("Dev").place()
+                    .add(Button("print trajectories", self._printTrajectories))
                     .add(Button("show_implot_demo", dpg.show_implot_demo))
                     .add(Button("show_font_manager", dpg.show_font_manager))
                     .add(Button("show_style_editor", dpg.show_style_editor))
@@ -117,7 +132,7 @@ class Application:
         self._makeTheme()
 
         with dpg.font_registry():
-            with dpg.font(r"res/fonts/Roboto-Mono/RobotoMono.ttf", 16, default_font=True, pixel_snapH=True) as font:
+            with dpg.font(r"res/fonts/Roboto-Mono/RobotoMono.ttf", 20, default_font=True) as font:
                 dpg.add_font_range_hint(dpg.mvFontRangeHint_Cyrillic)
 
         dpg.bind_font(font)

@@ -67,7 +67,7 @@ class CodeGenerator:
         })
 
     def __processTrajectory(self, stream: TextIO, config: GeneratorSettings, trajectory: Trajectory, state: State) -> None:
-        paint_move_speed = config.speed if trajectory.movement_speed is None else trajectory.movement_speed
+        paint_move_speed = config.speed if trajectory.movement_speed == 0 else trajectory.movement_speed
 
         stream.write(self.on_contour_begin.format(
             speed=paint_move_speed,
@@ -106,8 +106,8 @@ class CodeGenerator:
             stream.write(self.on_update_progress.format(progress=current_progress))
             state.global_last_progress = current_progress
 
-    def run(self, stream: TextIO, config: GeneratorSettings, contours: Iterable[Trajectory]) -> None:
-        status = State(contours, config)
+    def run(self, stream: TextIO, config: GeneratorSettings, trajectories: Iterable[Trajectory]) -> None:
+        status = State(trajectories, config)
 
         stream.write(self.setup)
 
@@ -116,8 +116,8 @@ class CodeGenerator:
             tool_none=config.tool_none
         ))
 
-        for contour in contours:
-            self.__processTrajectory(stream, config, contour, status)
+        for trajectory in trajectories:
+            self.__processTrajectory(stream, config, trajectory, status)
 
         stream.write(self.end.format(
             end_speed=config.end_speed,

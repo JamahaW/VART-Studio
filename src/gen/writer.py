@@ -34,6 +34,8 @@ class CodeWriter:
         self.__code_generator.run(stream, config, contours)
 
         stream.seek(0)
+        
+        print(stream.getvalue())
 
         return self.__bytelang.compile(stream, bytecode_stream, log_flag)
 

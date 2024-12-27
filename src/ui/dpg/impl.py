@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from os import PathLike
 from pathlib import Path
 from typing import Callable
 from typing import Iterable
@@ -30,13 +31,15 @@ class Group(DPGItem, Container, Placeable):
 
 class CollapsingHeader(Container, DPGItem, Placeable):
 
-    def __init__(self, label: str) -> None:
+    def __init__(self, label: str, *, default_open: bool = False) -> None:
         super().__init__()
         self.__label = label
+        self.__default_open = default_open
 
     def placeRaw(self, parent_id: ItemID) -> None:
-        self.setItemID(dpg.add_collapsing_header(label=self.__label, parent=parent_id))
+        self.setItemID(dpg.add_collapsing_header(label=self.__label, parent=parent_id, default_open=self.__default_open))
         del self.__label
+        del self.__default_open
 
 
 class Menu(Container, DPGItem, Placeable):
@@ -102,7 +105,7 @@ class Button(DPGItem, Placeable):
 
 class FileDialog(DPGItem):
 
-    def __init__(self, label: str, on_select: Callable[[Sequence[Path]], None], extensions: Iterable[tuple[str, str]], default_path: str = "") -> None:
+    def __init__(self, label: str, on_select: Callable[[Sequence[Path]], None], extensions: Iterable[tuple[str, str]], default_path: PathLike = "") -> None:
         super().__init__()
 
         def __callback(_, app_data: dict[str, dict]):
@@ -113,7 +116,7 @@ class FileDialog(DPGItem):
 
             on_select(tuple(Path(p) for p in paths))
 
-        with dpg.file_dialog(label=label, callback=__callback, directory_selector=False, show=False, width=1200, height=800, default_path=default_path, modal=True) as f:
+        with dpg.file_dialog(label=label, callback=__callback, directory_selector=False, show=False, width=900, height=600, default_path=default_path, modal=True) as f:
             self.setItemID(f)
 
             for extension, text in extensions:
@@ -132,6 +135,20 @@ class DragLine(VariableDPGItem[float], Placeable):
         self.setItemID(dpg.add_drag_line(color=self.DEFAULT_COLOR, vertical=self.__is_vertical, callback=self.__on_change, parent=parent_id))
         del self.__is_vertical
         del self.__on_change
+
+
+class ChildWindow(Container, DPGItem, Placeable):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+        self.__kwargs = kwargs
+
+    def placeRaw(self, parent_id: ItemID) -> None:
+        self.setItemID(dpg.add_child_window(**self.__kwargs))
+        del self.__kwargs
+
+    def add(self, item: Placeable) -> Container:
+        return super().add(item)
 
 
 class DragPoint(VariableDPGItem[tuple[float, float]], Placeable):
