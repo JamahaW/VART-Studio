@@ -14,7 +14,7 @@ if __name__ == '__main__':
     home_path = r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp"
     flash_path = r"E:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp"
 
-    APP_PATH = Path(flash_path)
+    APP_PATH = Path(home_path)
 
     Application(APP_PATH).build()
     dpg.setup_dearpygui()
