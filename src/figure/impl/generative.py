@@ -4,10 +4,10 @@ from typing import Callable
 from figure.impl.transformable import TransformableFigure
 from gen.vertex import VertexGenerator
 from gen.vertex import Vertices
-from ui.abc import ItemID
-from ui.dpg.impl import CollapsingHeader
-from ui.dpg.impl import InputInt
-from ui.dpg.impl import SliderInt
+from ui.widgets.abc import ItemID
+from ui.widgets.dpg.impl import CollapsingHeader
+from ui.widgets.dpg.impl import InputInt
+from ui.widgets.dpg.impl import SliderInt
 
 
 class GenerativeFigure(TransformableFigure):

@@ -7,10 +7,10 @@ from dearpygui import dearpygui as dpg
 
 from gen.vertex import Vec2i
 from gen.vertex import Vertices
-from ui.abc import ItemID
-from ui.dpg.impl import Axis
-from ui.dpg.impl import LineSeries
-from ui.dpg.impl import Plot
+from ui.widgets.abc import ItemID
+from ui.widgets.dpg.impl import Axis
+from ui.widgets.dpg.impl import LineSeries
+from ui.widgets.dpg.impl import Plot
 
 
 class Figure(LineSeries, ABC):

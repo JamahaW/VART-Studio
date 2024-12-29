@@ -15,17 +15,17 @@ from gen.trajectory import Trajectory
 from gen.vertex import Vec2f
 from gen.vertex import Vec2i
 from gen.vertex import Vertices
-from ui.abc import ItemID
 from ui.color import Color
-from ui.custom.input2d import InputInt2D
-from ui.dpg.impl import Button
-from ui.dpg.impl import Checkbox
-from ui.dpg.impl import CollapsingHeader
-from ui.dpg.impl import DragPoint
-from ui.dpg.impl import InputInt
-from ui.dpg.impl import Separator
-from ui.dpg.impl import SliderInt
-from ui.dpg.theme import LineSeriesTheme
+from ui.widgets.abc import ItemID
+from ui.widgets.custom.input2d import InputInt2D
+from ui.widgets.dpg.impl import Button
+from ui.widgets.dpg.impl import Checkbox
+from ui.widgets.dpg.impl import CollapsingHeader
+from ui.widgets.dpg.impl import DragPoint
+from ui.widgets.dpg.impl import InputInt
+from ui.widgets.dpg.impl import Separator
+from ui.widgets.dpg.impl import SliderInt
+from ui.widgets.dpg.theme import LineSeriesTheme
 
 
 class TransformableFigure(Figure):

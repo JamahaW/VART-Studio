@@ -6,13 +6,13 @@ from figure.abc import Canvas
 from figure.abc import Figure
 from gen.vertex import Vec2i
 from gen.vertex import Vertices
-from ui.abc import ItemID
 from ui.color import Color
 from ui.color import WORK_AREA
-from ui.custom.widgets import Border
-from ui.dpg.impl import CollapsingHeader
-from ui.dpg.impl import InputInt
-from ui.dpg.theme import LineSeriesTheme
+from ui.widgets.abc import ItemID
+from ui.widgets.custom.border import Border
+from ui.widgets.dpg.impl import CollapsingHeader
+from ui.widgets.dpg.impl import InputInt
+from ui.widgets.dpg.theme import LineSeriesTheme
 
 
 class WorkAreaFigure(Figure):

@@ -4,10 +4,10 @@ from typing import Optional
 
 from dearpygui import dearpygui as dpg
 
-from ui.abc import Item
-from ui.abc import ItemID
-from ui.abc import RangedItem
-from ui.abc import VariableItem
+from ui.widgets.abc import Item
+from ui.widgets.abc import ItemID
+from ui.widgets.abc import RangedItem
+from ui.widgets.abc import VariableItem
 
 
 class DPGItem(Item):

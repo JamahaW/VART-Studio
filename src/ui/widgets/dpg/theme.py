@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dearpygui.dearpygui as dpg
 
-from ui.abc import ItemID
+from ui.widgets.abc import ItemID
 from ui.color import Color
 
 

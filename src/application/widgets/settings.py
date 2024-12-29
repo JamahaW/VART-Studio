@@ -1,9 +1,9 @@
 from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
-from ui.abc import ItemID
-from ui.dpg.impl import CollapsingHeader
-from ui.dpg.impl import InputInt
-from ui.dpg.impl import SliderInt
+from ui.widgets.abc import ItemID
+from ui.widgets.dpg.impl import CollapsingHeader
+from ui.widgets.dpg.impl import InputInt
+from ui.widgets.dpg.impl import SliderInt
 
 
 class CodeGeneratorSettngsWidget(CollapsingHeader):

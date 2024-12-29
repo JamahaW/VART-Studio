@@ -14,11 +14,11 @@ from figure.impl.workarea import WorkAreaFigure
 from figure.registry import FigureRegistry
 from gen.settings import GeneratorSettings
 from gen.writer import CodeWriter
-from ui.app import Application
-from ui.custom.logger import LoggerWidget
-from ui.dpg.impl import Button
-from ui.dpg.impl import FileDialog
-from ui.dpg.impl import Menu
+from ui.application import Application
+from ui.widgets.custom.logger import LoggerWidget
+from ui.widgets.dpg.impl import Button
+from ui.widgets.dpg.impl import FileDialog
+from ui.widgets.dpg.impl import Menu
 
 
 class VARTApplication(Application):

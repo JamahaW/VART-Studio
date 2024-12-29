@@ -2,13 +2,13 @@ from typing import Callable
 from typing import ClassVar
 from typing import Optional
 
-from ui.abc import ItemID
-from ui.abc import VariableItem
-from ui.dpg.impl import Button
-from ui.dpg.impl import Group
-from ui.dpg.impl import InputInt
-from ui.dpg.impl import Separator
-from ui.dpg.impl import Text
+from ui.widgets.abc import ItemID
+from ui.widgets.abc import VariableItem
+from ui.widgets.dpg.impl import Button
+from ui.widgets.dpg.impl import Group
+from ui.widgets.dpg.impl import InputInt
+from ui.widgets.dpg.impl import Separator
+from ui.widgets.dpg.impl import Text
 
 type Vec2 = tuple[int, int]
 

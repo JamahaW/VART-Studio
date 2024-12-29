@@ -1,10 +1,10 @@
 from io import StringIO
 
-from ui.abc import ItemID
-from ui.abc import Placeable
-from ui.dpg.impl import Button
-from ui.dpg.impl import ChildWindow
-from ui.dpg.impl import Text
+from ui.widgets.abc import ItemID
+from ui.widgets.abc import Placeable
+from ui.widgets.dpg.impl import Button
+from ui.widgets.dpg.impl import ChildWindow
+from ui.widgets.dpg.impl import Text
 
 
 class LoggerWidget(StringIO, Placeable):

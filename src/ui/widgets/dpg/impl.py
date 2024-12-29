@@ -9,14 +9,14 @@ from typing import Sequence
 from dearpygui import dearpygui as dpg
 
 from gen.vertex import Vertices
-from ui.abc import Color3i
-from ui.abc import Container
-from ui.abc import ItemID
-from ui.abc import Placeable
+from ui.widgets.abc import Color3i
+from ui.widgets.abc import Container
+from ui.widgets.abc import ItemID
+from ui.widgets.abc import Placeable
 from ui.color import DRAG_LINE
-from ui.dpg.abc import DPGItem
-from ui.dpg.abc import RangedDPGItem
-from ui.dpg.abc import VariableDPGItem
+from ui.widgets.dpg.abc import DPGItem
+from ui.widgets.dpg.abc import RangedDPGItem
+from ui.widgets.dpg.abc import VariableDPGItem
 
 
 class Group(DPGItem, Container, Placeable):
