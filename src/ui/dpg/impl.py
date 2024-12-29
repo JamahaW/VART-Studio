@@ -107,22 +107,33 @@ class Button(DPGItem, Placeable):
 
 class FileDialog(DPGItem):
 
-    def __init__(self, label: str, on_select: Callable[[Sequence[Path]], None], extensions: Iterable[tuple[str, str]], default_path: PathLike = "") -> None:
+    def __init__(self, label: str, on_select: Callable[[Sequence[Path]], None], extensions: Iterable[tuple[str, str]], default_path: PathLike) -> None:
         super().__init__()
+        self.__label = label
+        self.__default_path = default_path
 
-        def __callback(_, app_data: dict[str, dict]):
+        self._extensions = extensions
+        self._on_select = on_select
+
+    def build(self) -> None:
+        """Построить"""
+
+        def _callback(_, app_data: dict[str, dict]):
             paths = app_data.get("selections").values()
 
             if len(paths) == 0:
                 return
 
-            on_select(tuple(Path(p) for p in paths))
+            self._on_select(tuple(map(Path, paths)))
 
-        with dpg.file_dialog(label=label, callback=__callback, directory_selector=False, show=False, width=900, height=600, default_path=default_path, modal=True) as f:
+        with dpg.file_dialog(label=self.__label, callback=_callback, directory_selector=False, show=False, width=900, height=600, default_path=self.__default_path, modal=True) as f:
             self.setItemID(f)
 
-            for extension, text in extensions:
+            for extension, text in self._extensions:
                 dpg.add_file_extension(f".{extension}", color=(255, 160, 80, 255), custom_text=f"[{text}]")
+
+        del self.__label
+        del self.__default_path
 
 
 class DragLine(VariableDPGItem[float], Placeable):
