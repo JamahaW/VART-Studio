@@ -17,7 +17,7 @@ Vec2i = Vec2D[int]
 
 
 class VertexGenerator:
-    MIN_RESOLUTION: Final[int] = 10
+    MIN_RESOLUTION: Final[int] = 1
     MAX_RESOLUTION: Final[int] = 1000
 
     MIN_POLYGON_VERTEX_COUNT: Final[int] = 3

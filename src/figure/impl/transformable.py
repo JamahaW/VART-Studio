@@ -10,7 +10,6 @@ from typing import Optional
 
 from figure.abc import Canvas
 from figure.abc import Figure
-from gen.settings import GeneratorSettings
 from gen.trajectory import Trajectory
 from gen.vertex import Vec2f
 from gen.vertex import Vec2i
@@ -24,7 +23,6 @@ from ui.widgets.dpg.impl import CollapsingHeader
 from ui.widgets.dpg.impl import DragPoint
 from ui.widgets.dpg.impl import InputInt
 from ui.widgets.dpg.impl import Separator
-from ui.widgets.dpg.impl import SliderInt
 from ui.widgets.dpg.theme import LineSeriesTheme
 
 
@@ -46,8 +44,9 @@ class TransformableFigure(Figure):
 
         self._on_delete = on_delete
 
-        self._speed_input = SliderInt("Скорость", value_range=GeneratorSettings.getSpeedRange())
-        self._tool_id_input = InputInt("Инструмент", self.__updateDisplayColor, value_range=(1, Trajectory.MAX_TOOL_ID), default_value=1, width=self.INPUT_WIDTH)
+        self._accel_profile_checkbox = Checkbox(None, label="Использовать планировщик ускорений", default_value=True)
+
+        self._tool_id_input = InputInt("Инструмент", self.__updateDisplayColor, value_range=(1, 2), default_value=1, width=self.INPUT_WIDTH)
 
         self._rotation_input = InputInt("Поворот", self.__onRotationInputChanged, value_range=(-360, 360), default_value=0, step=2, step_fast=5, width=self.INPUT_WIDTH)
 
@@ -127,8 +126,8 @@ class TransformableFigure(Figure):
         return Trajectory(
             x_positions=x,
             y_positions=y,
-            tool_id=self._tool_id_input.getValue(),
-            movement_speed=self._speed_input.getValue()
+            tool=self._tool_id_input.getValue(),
+            accel_profile=self._accel_profile_checkbox.getValue()
         )
 
     def getTransformedVertices(self) -> tuple[Iterable[int], Iterable[int]]:
@@ -177,7 +176,7 @@ class TransformableFigure(Figure):
             CollapsingHeader("Параметры Печати", default_open=True).place(self)
             .add(self._export_checkbox)
             .add(self._tool_id_input)
-            .add(self._speed_input)
+            .add(self._accel_profile_checkbox)
             .add(Separator())
         )
 

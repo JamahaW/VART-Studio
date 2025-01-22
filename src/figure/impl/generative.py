@@ -7,7 +7,6 @@ from gen.vertex import Vertices
 from ui.widgets.abc import ItemID
 from ui.widgets.dpg.impl import CollapsingHeader
 from ui.widgets.dpg.impl import InputInt
-from ui.widgets.dpg.impl import SliderInt
 
 
 class GenerativeFigure(TransformableFigure):
@@ -15,10 +14,10 @@ class GenerativeFigure(TransformableFigure):
     def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
         super().__init__((tuple(), tuple()), label, on_delete)
 
-        self._resolution_input = SliderInt(
+        self._resolution_input = InputInt(
             "Разрешение",
             value_range=VertexGenerator.getResolutionRange(),
-            default_value=VertexGenerator.MIN_RESOLUTION,
+            default_value=12,
             on_change=lambda _: self.update(),
         )
 

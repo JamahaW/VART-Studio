@@ -7,13 +7,14 @@ from typing import Sequence
 
 from dearpygui import dearpygui as dpg
 
-from application.widgets.settings import CodeGeneratorSettngsWidget
 from bytelang.utils import LogFlag
 from figure.abc import Canvas
 from figure.impl.workarea import WorkAreaFigure
 from figure.registry import FigureRegistry
-from gen.settings import GeneratorSettings
-from gen.writer import CodeWriter
+from gen.codegen import CodeGenerator
+from gen.enums import PlannerMode
+from gen.legacy.writer import CodeWriter
+from gen.trajectory import MovementPreset
 from ui.application import Application
 from ui.widgets.custom.logger import LoggerWidget
 from ui.widgets.dpg.impl import Button
@@ -26,7 +27,7 @@ class VARTApplication(Application):
 
     def __init__(self, resources_path: Path) -> None:
         self._logger = LoggerWidget()
-        self._log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME  # | LogFlag.BYTECODE
+        self._log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME | LogFlag.BYTECODE
 
         self._image_file_dialog = FileDialog(
             "Укажите файл изображения для вставки", self.onImageFileSelected,
@@ -44,14 +45,16 @@ class VARTApplication(Application):
 
         self._figure_registry = FigureRegistry(Canvas())
 
-        self._generator_settings = GeneratorSettings(
-            speed=5,
-            end_speed=10,
-            tool_none=0,
-            disconnect_distance_mm=5,
-            tool_change_duration_ms=500
+        c = CodeGenerator(
+            MovementPreset(
+                PlannerMode.ACCEL, 80, 25
+            ),
+            MovementPreset(
+                PlannerMode.SPEED, 60, 0
+            )
         )
-        self._bytecode_writer = CodeWriter.simpleSetup(resources_path / "res")
+
+        self._bytecode_writer = CodeWriter.simpleSetup(resources_path / "res", c)
 
     @staticmethod
     def onImageFileSelected(paths: Sequence[Path]) -> None:
@@ -68,17 +71,11 @@ class VARTApplication(Application):
         with open(output_path, "wb") as bytecode_stream:
             trajectories = self._figure_registry.getTrajectories()
 
-            result = self._bytecode_writer.run(
-                self._generator_settings,
-                trajectories,
-                bytecode_stream,
-                self._log_flags
-            )
+            result = self._bytecode_writer.run(trajectories, bytecode_stream)
 
             self._logger.write(result.getMessage())
 
     def build(self) -> None:
-        """Построить UI приложения"""
         self._image_file_dialog.build()
         self._export_file_dialog.build()
 
@@ -99,9 +96,6 @@ class VARTApplication(Application):
         with dpg.tab_bar():
             with dpg.tab(label="Область печати"):
                 self._figure_registry.canvas.place()
-
-            with dpg.tab(label="Параметры"):
-                CodeGeneratorSettngsWidget(self._generator_settings).place()
 
             with dpg.tab(label="Журнал"):
                 self._logger.place()
