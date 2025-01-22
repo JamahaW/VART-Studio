@@ -42,6 +42,7 @@ class TransformableFigure(Figure):
     def __init__(self, vertices: Vertices, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
         super().__init__(vertices, label, self.DEFAULT_SIZE)
 
+        self._name = label
         self._on_delete = on_delete
 
         self._accel_profile_checkbox = Checkbox(None, label="Использовать планировщик ускорений", default_value=True)
@@ -124,6 +125,7 @@ class TransformableFigure(Figure):
 
         x, y = self.getTransformedVertices()
         return Trajectory(
+            name=self._name,
             x_positions=x,
             y_positions=y,
             tool=self._tool_id_input.getValue(),

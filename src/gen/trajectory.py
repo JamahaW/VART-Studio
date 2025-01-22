@@ -1,45 +1,17 @@
 from dataclasses import dataclass
 from typing import Iterable
-from typing import TextIO
 
+from gen.agents import MacroAgent
 from gen.enums import MarkerTool
-from gen.enums import PlannerMode
-
-
-@dataclass(frozen=True)
-class MovementPreset:
-    """ПредНастройка перемещения"""
-
-    mode: PlannerMode
-    """Режим планировщика"""
-
-    speed: int
-    """Заданная скорость"""
-
-    accel: int
-    """Заданное ускорение"""
-
-
-_BEGIN = """
-# TRAJECTORY BEGIN
-    set_planner_mode {mode}
-    set_speed {speed}
-    set_accel {accel}
-    set_active_tool 0
-"""
-
-_ON_POSITION = "set_position {x} {y}\n"
-
-_END = """
-    set_active_tool 0
-# TRAJECTORY END
-
-"""
+from gen.settings import GeneratorSettings
 
 
 @dataclass(frozen=True)
 class Trajectory:
     """Траектория - непрерывная кривая"""
+
+    name: str
+    """Наименование траектории для заметок"""
 
     x_positions: Iterable[int]
     """Позиции перемещений X"""
@@ -53,38 +25,30 @@ class Trajectory:
     accel_profile: bool
     """Использовать профиль с ускорением"""
 
-    def write(self, stream: TextIO, preset: MovementPreset) -> None:
-        stream.write(_BEGIN.format(mode=preset.mode, speed=preset.speed, accel=preset.accel))
+    def vertexCount(self) -> int:
+        """Количество вершин"""
+        return len(tuple(self.x_positions))
+
+    def run(self, agent: MacroAgent, settings: GeneratorSettings):
+        """Использовать агента для преодоления траектории"""
 
         x_start, *x_positions = self.x_positions
         y_start, *y_positions = self.y_positions
 
-        stream.write(_ON_POSITION.format(x=x_start, y=y_start))
-        stream.write(f"set_active_tool {self.tool}\n")
+        agent.note(f"Trajectory : '{self.name}' Begin")
+
+        agent.setProfile(settings.free_move_profile)
+        agent.setTool(MarkerTool.NONE)
+
+        agent.step(x_start, y_start)
+
+        agent.setTool(self.tool)
+        agent.setProfile(settings.long_line_profile if self.accel_profile else settings.short_curve_profile)
 
         for x, y in zip(x_positions, y_positions):
-            stream.write(_ON_POSITION.format(x=x, y=y))
+            agent.step(x, y)
 
-        stream.write(_END.format(none_tool=MarkerTool.NONE))
+        agent.setTool(MarkerTool.NONE)
+        agent.setProfile(settings.free_move_profile)
 
-
-def _test():
-    t = Trajectory(
-        (0, 10, 20, 30, 40),
-        (50, 40, 30, 20, 10),
-        MarkerTool.LEFT,
-        True
-    )
-
-    from io import StringIO
-
-    s = StringIO()
-    m = MovementPreset(PlannerMode.ACCEL, 150, 75)
-
-    t.write(s, m)
-
-    print(s.getvalue())
-
-
-if __name__ == '__main__':
-    _test()
+        agent.note(f"Trajectory : '{self.name}' End")

@@ -7,14 +7,16 @@ from typing import Sequence
 
 from dearpygui import dearpygui as dpg
 
+from application.widgets.settings import CodeGeneratorSettngsWidget
+from bytelang.compiler import ByteLangCompiler
 from bytelang.utils import LogFlag
 from figure.abc import Canvas
 from figure.impl.workarea import WorkAreaFigure
 from figure.registry import FigureRegistry
-from gen.codegen import CodeGenerator
 from gen.enums import PlannerMode
-from gen.legacy.writer import CodeWriter
-from gen.trajectory import MovementPreset
+from gen.movementprofile import MovementProfile
+from gen.settings import GeneratorSettings
+from gen.writer import CodeWriter
 from ui.application import Application
 from ui.widgets.custom.logger import LoggerWidget
 from ui.widgets.dpg.impl import Button
@@ -45,16 +47,13 @@ class VARTApplication(Application):
 
         self._figure_registry = FigureRegistry(Canvas())
 
-        c = CodeGenerator(
-            MovementPreset(
-                PlannerMode.ACCEL, 80, 25
-            ),
-            MovementPreset(
-                PlannerMode.SPEED, 60, 0
-            )
+        self._generator_settings = GeneratorSettings(
+            MovementProfile(name="Перемещение", mode=PlannerMode.ACCEL, speed=150, accel=50),
+            MovementProfile(name="Продолжительный отрезок", mode=PlannerMode.ACCEL, speed=75, accel=25),
+            MovementProfile(name="Кривая (Короткий отрезок)", mode=PlannerMode.SPEED, speed=50, accel=0),
         )
 
-        self._bytecode_writer = CodeWriter.simpleSetup(resources_path / "res", c)
+        self._bytecode_writer = CodeWriter(self._generator_settings, ByteLangCompiler.simpleSetup(r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res\bytelang"))
 
     @staticmethod
     def onImageFileSelected(paths: Sequence[Path]) -> None:
@@ -97,11 +96,11 @@ class VARTApplication(Application):
             with dpg.tab(label="Область печати"):
                 self._figure_registry.canvas.place()
 
+            with dpg.tab(label="Настройки"):
+                CodeGeneratorSettngsWidget(self._generator_settings).place()
+
             with dpg.tab(label="Журнал"):
                 self._logger.place()
-
-            with dpg.tab(label="Test"):
-                pass
 
     def _buildMenuBar(self):
         with dpg.menu_bar():
