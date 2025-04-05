@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from struct import error
 from typing import BinaryIO
 from typing import Iterable

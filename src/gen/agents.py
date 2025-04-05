@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from math import hypot
 from typing import Optional
 from typing import TextIO
 
 from gen.enums import MarkerTool
 from gen.enums import PlannerMode
 from gen.movementprofile import MovementProfile
+from gen.settings import GeneratorSettings
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,9 @@ class MacroAgent:
     _agent: LowLevelAgent
     """Используемый агент"""
 
+    _settings: GeneratorSettings
+    """Настройки генератора"""
+
     _steps_total: int
     """Общее число шагов"""
 
@@ -116,12 +121,14 @@ class MacroAgent:
             return
 
         self._last_tool = tool
+        self._agent.delay_ms(self._settings.tool_change_begin_timeout_ms)
         self._agent.set_active_tool(tool)
+        self._agent.delay_ms(self._settings.tool_change_end_timeout_ms)
 
     def step(self, x: int, y: int) -> None:
         """Сделать шаг (Перейти в позицию)"""
-        self._agent.set_position(x, y)
         self._current_step += 1
+        self._agent.set_position(x, y)
 
         current_progress = self._current_step * 100 // self._steps_total
         if current_progress != self._last_progress:
@@ -132,35 +139,8 @@ class MacroAgent:
     def epilogue(self) -> None:
         """Сгенерировать эпилог"""
         self._agent.comment("Epilogue - Begin")
-        self._agent.delay_ms(1000)
-        self._agent.set_position(0, 0)
+        self._agent.delay_ms(self._settings.epilogue_stop_duration_ms)
+        x, y = self._settings.epilogue_end_position
+        self._agent.set_position(x, y)
         self._agent.quit()
         self._agent.note("Epilogue - End")
-
-
-def _test():
-    from io import StringIO
-
-    s = StringIO()
-
-    a = MacroAgent(LowLevelAgent(s), 10)
-
-    a.prologue()
-
-    a.setProfile(MovementProfile("IDLE", PlannerMode.ACCEL, 100, 50))
-    a.setTool(MarkerTool.NONE)
-
-    a.step(500, 500)
-    a.setTool(MarkerTool.LEFT)
-    a.step(500, -500)
-    a.setTool(MarkerTool.LEFT)
-
-    a.setTool(MarkerTool.NONE)
-
-    a.epilogue()
-
-    print(s.getvalue())
-
-
-if __name__ == '__main__':
-    _test()

@@ -18,7 +18,7 @@ class Application(ABC):
         w, h = resolution
 
         dpg.create_context()
-        dpg.create_viewport(title=title, width=w, height=h)
+        dpg.create_viewport(title=title, width=w, height=h, x_pos=0, y_pos=0)
 
         with dpg.window() as main_window:
             dpg.set_primary_window(main_window, True)

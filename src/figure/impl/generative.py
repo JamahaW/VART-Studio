@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from typing import Callable
 
@@ -9,19 +11,23 @@ from ui.widgets.dpg.impl import CollapsingHeader
 from ui.widgets.dpg.impl import InputInt
 
 
-class GenerativeFigure(TransformableFigure):
+class GenerativeFigure[T: "GenerativeFigure"](TransformableFigure[T]):
 
-    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
-        super().__init__((tuple(), tuple()), label, on_delete)
+    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None], on_clone: Callable[[TransformableFigure], None]) -> None:
+        super().__init__((tuple(), tuple()), label, on_delete, on_clone)
 
         self._resolution_input = InputInt(
             "Разрешение",
-            value_range=VertexGenerator.getResolutionRange(),
-            default_value=12,
+            value_range=VertexGenerator.RESOLUTION_RANGE.asTuple(),
+            default_value=1,
             on_change=lambda _: self.update(),
         )
 
         self._header = CollapsingHeader("Прочее", default_open=True)
+
+    def transformClone(self, clone: GenerativeFigure) -> TransformableFigure:
+        clone.setResolution(self.getResolution())
+        return super().transformClone(clone)
 
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
@@ -30,6 +36,10 @@ class GenerativeFigure(TransformableFigure):
     def getResolution(self) -> int:
         """Получить разрешение"""
         return self._resolution_input.getValue()
+
+    def setResolution(self, new_resolution: int) -> None:
+        """Установить разрешение"""
+        self._resolution_input.setValue(new_resolution)
 
     @abstractmethod
     def _generateVertices(self) -> Vertices:
@@ -40,7 +50,10 @@ class GenerativeFigure(TransformableFigure):
         return super().getTransformedVertices()
 
 
-class RectFigure(GenerativeFigure):
+class RectFigure(GenerativeFigure["RectFigure"]):
+
+    def _getCloneInstance(self, name: str, on_delete: Callable[[RectFigure], None], on_clone: Callable[[RectFigure], None]) -> RectFigure:
+        return RectFigure(name, on_delete, on_clone)
 
     def _generateVertices(self) -> Vertices:
         return VertexGenerator.rect(self.getResolution())
@@ -48,15 +61,59 @@ class RectFigure(GenerativeFigure):
 
 class CircleFigure(GenerativeFigure):
 
+    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None], on_clone: Callable[[TransformableFigure], None]) -> None:
+        super().__init__(label, on_delete, on_clone)
+        self._angle_input = InputInt(
+            "Угол",
+            on_change=lambda _: self.update(),
+            width=TransformableFigure.INPUT_WIDTH,
+            default_value=360,
+            step=5,
+            step_fast=15,
+            value_range=(1, 360)
+        )
+
+    def getAngle(self) -> int:
+        return self._angle_input.getValue()
+
+    def setAngle(self, angle: int) -> None:
+        return self._angle_input.setValue(angle)
+
+    def _getCloneInstance(self, name: str, on_delete: Callable[[CircleFigure], None], on_clone: Callable[[CircleFigure], None]) -> CircleFigure:
+        return CircleFigure(name, on_delete, on_clone)
+
     def _generateVertices(self) -> Vertices:
-        return VertexGenerator.circle(self.getResolution())
+        return VertexGenerator.circle(self.getAngle(), self.getResolution())
+
+    def transformClone(self, clone: CircleFigure) -> TransformableFigure:
+        clone.setAngle(self.getAngle())
+        return super().transformClone(clone)
+
+    def placeRaw(self, parent_id: ItemID) -> None:
+        super().placeRaw(parent_id)
+        self._header.add(self._angle_input)
 
 
 class SpiralFigure(GenerativeFigure):
 
-    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
-        super().__init__(label, on_delete)
-        self._repeats_count = InputInt("Кол-во витков", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=1, value_range=VertexGenerator.getSpiralRepeatsRange())
+    def _getCloneInstance(self, name: str, on_delete: Callable[[SpiralFigure], None], on_clone: Callable[[SpiralFigure], None]) -> SpiralFigure:
+        return SpiralFigure(name, on_delete, on_clone)
+
+    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None], on_clone: Callable[[TransformableFigure], None]) -> None:
+        super().__init__(label, on_delete, on_clone)
+        self._repeats_count = InputInt("Витки", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=1, value_range=VertexGenerator.SPIRAL_REPEATS.asTuple())
+
+    def transformClone(self, clone: SpiralFigure) -> TransformableFigure:
+        clone.setRepeatsCount(self.getRepeatsCount())
+        return super().transformClone(clone)
+
+    def setRepeatsCount(self, repeats: int) -> None:
+        """Установить количество витков"""
+        self._repeats_count.setValue(repeats)
+
+    def getRepeatsCount(self) -> int:
+        """Получить количество витков"""
+        return self._repeats_count.getValue()
 
     def _generateVertices(self) -> Vertices:
         return VertexGenerator.spiral(self.getResolution(), self._repeats_count.getValue())
@@ -68,9 +125,17 @@ class SpiralFigure(GenerativeFigure):
 
 class PolygonFigure(GenerativeFigure):
 
-    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None]) -> None:
-        super().__init__(label, on_delete)
-        self._vertex_count = InputInt("Вершины", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=6, value_range=VertexGenerator.getPolygonRange())
+    def _getCloneInstance(self, name: str, on_delete: Callable[[GenerativeFigure], None], on_clone: Callable[[GenerativeFigure], None]) -> GenerativeFigure:
+        return PolygonFigure(name, on_delete, on_clone)
+
+    def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None], on_clone: Callable[[TransformableFigure], None]) -> None:
+        super().__init__(label, on_delete, on_clone)
+        self._vertex_count = InputInt("Вершины", on_change=lambda _: self.update(), width=TransformableFigure.INPUT_WIDTH, default_value=6,
+                                      value_range=VertexGenerator.POLYGON_VERTEX_COUNT_RANGE.asTuple())
+
+    def transformClone(self, clone: PolygonFigure) -> TransformableFigure:
+        clone.setVertexCount(self.getVertexCount())
+        return super().transformClone(clone)
 
     def _generateVertices(self) -> Vertices:
         return VertexGenerator.nGon(self.getVertexCount(), self.getResolution())
@@ -79,6 +144,37 @@ class PolygonFigure(GenerativeFigure):
         """Получить количество вершин полигона"""
         return self._vertex_count.getValue()
 
+    def setVertexCount(self, count: int) -> None:
+        """Установить количество вершин полигона"""
+        self._vertex_count.setValue(count)
+
     def placeRaw(self, parent_id: ItemID) -> None:
         super().placeRaw(parent_id)
         self._header.add(self._vertex_count)
+
+
+class LineFigure(GenerativeFigure):
+
+    def _getCloneInstance(self, name: str, on_delete: Callable[[TransformableFigure], None], on_clone: Callable[[TransformableFigure], None]) -> TransformableFigure:
+        return LineFigure(name, on_delete, on_clone)
+
+    def _generateVertices(self) -> Vertices:
+        return VertexGenerator.lineSimple()
+
+# class TestDFX(GenerativeFigure):
+#     pass
+# __V: ClassVar = (
+#     VertexGenerator.sort_vertices
+#     (
+#         VertexGenerator.dxf_to_vertices(Path(r"E:\Projects\VART\Code\VART-DesktopApp\res\images\SQ.dxf"))
+#     )
+# )
+#
+# def __init__(self, label: str, on_delete: Callable[[TransformableFigure], None], on_clone: Callable[[TransformableFigure], None]) -> None:
+#     super().__init__(label, on_delete, on_clone)
+#
+# def _getCloneInstance(self, name: str, on_delete: Callable[[TestDFX], None], on_clone: Callable[[TestDFX], None]) -> TestDFX:
+#     return TestDFX(self._name, on_delete, on_clone)
+#
+# def _generateVertices(self) -> Vertices:
+#     return self.__V

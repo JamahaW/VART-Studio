@@ -1,12 +1,14 @@
+import math
 from itertools import chain
 from itertools import pairwise
 from math import cos
 from math import pi
 from math import radians
 from math import sin
-from pathlib import Path
 from typing import Final
 from typing import Iterable
+
+from tools import Range
 
 Vertices = tuple[Iterable[float], Iterable[float]]
 
@@ -17,26 +19,25 @@ Vec2i = Vec2D[int]
 
 
 class VertexGenerator:
-    MIN_RESOLUTION: Final[int] = 1
-    MAX_RESOLUTION: Final[int] = 1000
-
-    MIN_POLYGON_VERTEX_COUNT: Final[int] = 3
-    MAX_POLYGON_VERTEX_COUNT: Final[int] = 20
-
-    MIN_SPIRAL_REPEATS: Final[int] = 1
-    MAX_SPIRAL_REPEATS: Final[int] = 50
+    RESOLUTION_RANGE: Final[Range[int]] = Range(1, 1000)
+    POLYGON_VERTEX_COUNT_RANGE: Final[Range[int]] = Range(3, 20)
+    SPIRAL_REPEATS: Final[Range[int]] = Range(1, 50)
 
     @classmethod
-    def getSpiralRepeatsRange(cls) -> tuple[int, int]:
-        return cls.MIN_SPIRAL_REPEATS, cls.MAX_SPIRAL_REPEATS
+    def inflate(cls, v: Vertices, factor: float) -> Vertices:
+        """Вздуть вершины"""
 
-    @classmethod
-    def getResolutionRange(cls) -> tuple[int, int]:
-        return cls.MIN_RESOLUTION, cls.MAX_RESOLUTION
+        def __transform(__v: Vec2f) -> Vec2f:
+            x, y = __v
+            d = math.hypot(x, y)
 
-    @classmethod
-    def getPolygonRange(cls) -> tuple[int, int]:
-        return cls.MIN_POLYGON_VERTEX_COUNT, cls.MAX_POLYGON_VERTEX_COUNT
+            if d == 0:
+                return __v
+
+            return x + x / d * factor, y + y / d * factor
+
+        x, y = tuple(zip(*map(__transform, zip(*v))))
+        return x, y
 
     @classmethod
     def spiral(cls, resolution: int, k: float = 1.0) -> Vertices:
@@ -47,12 +48,16 @@ class VertexGenerator:
         )
 
     @classmethod
-    def circle(cls, resolution: int) -> Vertices:
-        k2_pi_p = 2 * pi / resolution
+    def circle(cls, angle_deg: int, resolution: int) -> Vertices:
+        k2_pi_p = 2 * angle_deg * pi / (resolution * 360)
         return (
             map(lambda a: sin(a * k2_pi_p), cls.range(resolution)),
             map(lambda a: cos(a * k2_pi_p), cls.range(resolution))
         )
+
+    @staticmethod
+    def lineSimple() -> Vertices:
+        return (0, 1), (0, 1)
 
     @classmethod
     def nGon(cls, vertex_count: int, resolution: int) -> Vertices:
@@ -103,7 +108,3 @@ class VertexGenerator:
     @staticmethod
     def mix[T: Number](__from: T, __end: T, t: float) -> T:
         return __end * t + (1.0 - t) * __from
-
-    @classmethod
-    def fromImage(cls, path: Path) -> Vertices:
-        pass

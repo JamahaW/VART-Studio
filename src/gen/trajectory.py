@@ -22,8 +22,8 @@ class Trajectory:
     tool: MarkerTool
     """Инструмент печати"""
 
-    accel_profile: bool
-    """Использовать профиль с ускорением"""
+    planner_mode: int
+    """Режим планировщика"""
 
     def vertexCount(self) -> int:
         """Количество вершин"""
@@ -43,12 +43,12 @@ class Trajectory:
         agent.step(x_start, y_start)
 
         agent.setTool(self.tool)
-        agent.setProfile(settings.long_line_profile if self.accel_profile else settings.short_curve_profile)
+        agent.setProfile(settings.getProfileByIndex(self.planner_mode))
 
         for x, y in zip(x_positions, y_positions):
             agent.step(x, y)
 
-        agent.setTool(MarkerTool.NONE)
         agent.setProfile(settings.free_move_profile)
+        agent.setTool(MarkerTool.NONE)
 
         agent.note(f"Trajectory : '{self.name}' End")

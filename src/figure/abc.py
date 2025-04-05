@@ -18,12 +18,16 @@ class Figure(LineSeries, ABC):
 
     def __init__(self, vertices: Vertices, label: str, size: Vec2i = (0, 0)) -> None:
         super().__init__(label)
-        self._source_vertices_x, self._source_vertices_y = vertices
+        x, y = vertices
+        self._source_vertices_x = tuple(x)
+        self._source_vertices_y = tuple(y)
         self.__size = size
 
     def setVertices(self, new_vertices: Vertices) -> None:
         """Задать значения вершин"""
-        self._source_vertices_x, self._source_vertices_y = new_vertices
+        x, y = new_vertices
+        self._source_vertices_x = tuple(x)
+        self._source_vertices_y = tuple(y)
 
     @abstractmethod
     def getTransformedVertices(self) -> Vertices:

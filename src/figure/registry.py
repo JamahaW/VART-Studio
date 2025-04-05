@@ -5,6 +5,7 @@ from typing import Sequence
 
 from figure.abc import Canvas
 from figure.impl.generative import CircleFigure
+from figure.impl.generative import LineFigure
 from figure.impl.generative import PolygonFigure
 from figure.impl.generative import RectFigure
 from figure.impl.generative import SpiralFigure
@@ -24,8 +25,14 @@ class FigureRegistry:
         self._figures[figure.__hash__()] = figure
         self.canvas.addFigure(figure)
 
-    def __onFigureDelete(self, figure: TransformableFigure) -> None:
+    def onFigureDelete(self, figure: TransformableFigure) -> None:
         self._figures.pop(figure.__hash__())
+
+    def onFigureClone(self, figure: TransformableFigure) -> None:
+        source_figure = self._figures.get(figure.__hash__())
+        clone_figure = source_figure.clone()
+        self.add(clone_figure)
+        source_figure.transformClone(clone_figure)
 
     def _makeName(self, source: str) -> str:
         return f"{source.capitalize()}: {self._getCurrentFigureIndex()}"
@@ -35,19 +42,23 @@ class FigureRegistry:
 
     def addPolygon(self) -> None:
         """Добавить полигон"""
-        self.add(PolygonFigure(self._makeName("Полигон"), self.__onFigureDelete))
+        self.add(PolygonFigure(self._makeName("Полигон"), self.onFigureDelete, self.onFigureClone))
 
     def addRect(self) -> None:
         """Добавить демо-прямоугольник"""
-        self.add(RectFigure(self._makeName("Прямоугольник"), self.__onFigureDelete))
+        self.add(RectFigure(self._makeName("Прямоугольник"), self.onFigureDelete, self.onFigureClone))
 
     def addSpiral(self) -> None:
         """Добавить спираль"""
-        self.add(SpiralFigure(self._makeName("Спираль"), self.__onFigureDelete))
+        self.add(SpiralFigure(self._makeName("Спираль"), self.onFigureDelete, self.onFigureClone))
 
     def addCircle(self) -> None:
         """Добавить круг"""
-        self.add(CircleFigure(self._makeName("Круг"), self.__onFigureDelete))
+        self.add(CircleFigure(self._makeName("Круг"), self.onFigureDelete, self.onFigureClone))
+
+    def addLine(self) -> None:
+        """Добавить линию"""
+        self.add(LineFigure(self._makeName("Линия"), self.onFigureDelete, self.onFigureClone))
 
     def clear(self) -> None:
         """Удалить все фигуры"""

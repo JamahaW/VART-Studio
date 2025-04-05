@@ -118,11 +118,11 @@ class FileDialog(DPGItem):
     def build(self) -> None:
         """Построить"""
 
-        def _callback(_, app_data: dict[str, dict]):
+        def _callback(_, app_data: dict[str, dict | str]):
             paths = app_data.get("selections").values()
 
             if len(paths) == 0:
-                return
+                paths = (Path(app_data.get("file_path_name")),)
 
             self._on_select(tuple(map(Path, paths)))
 
@@ -249,7 +249,7 @@ class InputInt(RangedDPGItem[int], Placeable):
             on_change: Callable[[int], None] = None,
             *,
             width: int = 100,
-            value_range: tuple[int, int] = (0, 100),
+            value_range: tuple[int, int] = (0, 1000),
             default_value: int = 0,
             step: int = 1,
             step_fast: int = 10

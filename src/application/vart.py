@@ -17,6 +17,7 @@ from gen.enums import PlannerMode
 from gen.movementprofile import MovementProfile
 from gen.settings import GeneratorSettings
 from gen.writer import CodeWriter
+from loader.obj import ObjLoader
 from ui.application import Application
 from ui.widgets.custom.logger import LoggerWidget
 from ui.widgets.dpg.impl import Button
@@ -32,9 +33,9 @@ class VARTApplication(Application):
         self._log_flags = LogFlag.PROGRAM_SIZE | LogFlag.COMPILATION_TIME | LogFlag.BYTECODE
 
         self._image_file_dialog = FileDialog(
-            "Укажите файл изображения для вставки", self.onImageFileSelected,
-            (("png", "Image"),),
-            resources_path / "res/images"
+            "Укажите файл obj для вставки", self.onObjFileSelected,
+            (("obj", "Object"),),
+            resources_path / "res/obj"
         )
 
         self._export_file_dialog = FileDialog(
@@ -47,21 +48,35 @@ class VARTApplication(Application):
 
         self._figure_registry = FigureRegistry(Canvas())
 
+        self._obj_loader = ObjLoader()
+
         self._generator_settings = GeneratorSettings(
-            MovementProfile(name="Перемещение", mode=PlannerMode.ACCEL, speed=150, accel=50),
-            MovementProfile(name="Продолжительный отрезок", mode=PlannerMode.ACCEL, speed=75, accel=25),
-            MovementProfile(name="Кривая (Короткий отрезок)", mode=PlannerMode.SPEED, speed=50, accel=0),
+            MovementProfile(name="Перемещение", mode=PlannerMode.ACCEL, speed=200, accel=75),
+            MovementProfile(name="Продолжительный отрезок", mode=PlannerMode.ACCEL, speed=150, accel=50),
+            MovementProfile(name="Кривая (Короткий отрезок)", mode=PlannerMode.SPEED, speed=20, accel=0),
+            MovementProfile(name="Малые отрезки", mode=PlannerMode.POSITION, speed=0, accel=0),
+            tool_change_begin_timeout_ms=1000,
+            tool_change_end_timeout_ms=1000,
+            epilogue_stop_duration_ms=1000,
+            epilogue_end_position=(0, 0)
         )
 
-        self._bytecode_writer = CodeWriter(self._generator_settings, ByteLangCompiler.simpleSetup(r"A:\Projects\Vertical-Art-Robot-Technology\Code\VART-DesktopApp\res\bytelang"))
+        self._bytecode_writer = CodeWriter(self._generator_settings, ByteLangCompiler.simpleSetup(resources_path / "res/bytelang"))
 
-    @staticmethod
-    def onImageFileSelected(paths: Sequence[Path]) -> None:
+    def onObjFileSelected(self, paths: Sequence[Path]) -> None:
         """
         Callback при открытии файла
         :param paths:
         """
         print(paths)
+
+        for path in paths:
+            obj_figures = self._obj_loader.load(path, self._figure_registry.onFigureDelete, self._figure_registry.onFigureClone)
+
+            for obj in obj_figures:
+                self._figure_registry.add(obj)
+
+        pass
 
     def _printTrajectories(self) -> None:
         self._logger.write("\n".join(map(str, self._figure_registry.getTrajectories())))
@@ -120,6 +135,7 @@ class VARTApplication(Application):
                 .add(Button("Прямоугольник", self._figure_registry.addRect))
                 .add(Button("Круг", self._figure_registry.addCircle))
                 .add(Button("Спираль", self._figure_registry.addSpiral))
+                .add(Button("Линия", self._figure_registry.addLine))
             )
 
             dpg.add_separator()
